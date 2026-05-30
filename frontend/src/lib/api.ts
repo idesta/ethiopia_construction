@@ -1,11 +1,10 @@
 // ─────────────────────────────────────────
 // API CLIENT
 // All frontend → backend communication goes through here.
-// Backend URL comes from env var so it works both in Docker
-// (http://backend:4000) and locally (http://localhost:4000)
+// Uses relative URLs so nginx routing handles domain/subdomain logic.
 // ─────────────────────────────────────────
 
-const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const BASE = "";
 
 // ── Helpers ──────────────────────────────
 

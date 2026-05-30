@@ -58,7 +58,8 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      # Note: API calls use relative URLs via nginx routing.
+      # No build-time env vars needed.
     networks:
       - construction_net
     depends_on:

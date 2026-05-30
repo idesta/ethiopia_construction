@@ -11,7 +11,7 @@ import { ProjectsSection } from "./components/sections/ProjectsSection";
 import { TeamSection } from "./components/sections/TeamSection";
 import { ContactSection } from "./components/sections/ContactSection";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const API = "";
 
 const DEFAULT_SERVICES = [
   {
