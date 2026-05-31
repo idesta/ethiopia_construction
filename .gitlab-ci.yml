@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────
-# ETHIOPIA CONSTRUCTION — GitLab CI/CD
+# ETHIOPIAN CONSTRUCTION — GitLab CI/CD
 # Pipeline: build → test → deploy
 # Runner: shell executor on Ubuntu VM
 # ─────────────────────────────────────────
