@@ -1,0 +1,69 @@
+# ─────────────────────────────────────────
+# ETHIOPIA CONSTRUCTION — GitLab CI/CD
+# Pipeline: build → test → deploy
+# Runner: shell executor on Ubuntu VM
+# ─────────────────────────────────────────
+
+stages:
+  - build
+  - deploy
+
+variables:
+  COMPOSE_FILE: docker-compose.yml
+
+# ── BUILD stage ───────────────────────────
+build:
+  stage: build
+  tags:
+    - linux_ad_vm-runner
+  script:
+    - echo "🔨 Building Docker images..."
+    - cd $DEPLOY_PATH
+    - docker compose build --no-cache
+  only:
+    - main
+
+# ── DEPLOY stage ──────────────────────────
+deploy:
+  stage: deploy
+  tags:
+    - vm-runner
+  script:
+    - echo "🚀 Deploying to production..."
+
+    # Go to project folder on VM
+    - cd $DEPLOY_PATH
+
+    # Pull latest code from GitLab
+    - git pull gitlab main
+
+    # Write fresh .env from GitLab CI variables
+    - |
+      cat > .env << EOF
+      POSTGRES_DB=$POSTGRES_DB
+      POSTGRES_USER=$POSTGRES_USER
+      POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      JWT_SECRET=$JWT_SECRET
+      ADMIN_CREATE_SECRET=$ADMIN_CREATE_SECRET
+      PUBLIC_URL=$PUBLIC_URL
+      FRONTEND_URL=$FRONTEND_URL
+      NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+      DEPLOY_PATH=$DEPLOY_PATH
+      EOF
+
+    # Rebuild and restart containers
+    - docker compose build --no-cache
+    - docker compose down
+    - docker compose up -d
+
+    # Wait for health check
+    - sleep 10
+    - docker compose ps
+
+    - echo "✅ Deployment complete!"
+
+  only:
+    - main
+  environment:
+    name: production
+    url: http://196.188.249.162
