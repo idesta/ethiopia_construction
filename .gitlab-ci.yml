@@ -4,14 +4,15 @@ stages:
 deploy:
   stage: deploy
   tags:
-    - linux_ad_vm-runner # Ensure this matches the tag of your GitLab Runner
+    - linux_ad_vm-runner
+  timeout: 30 minutes
   script:
     - echo "🚀 Deploying to production..."
 
-    # Copy built source to deploy path
-    - cp -r $CI_PROJECT_DIR/. /opt/ethiopia-construction/
+    # Copy source to deploy path
+    - rsync -av --exclude='.git' --exclude='node_modules' $CI_PROJECT_DIR/ /opt/ethiopia-construction/
 
-    # Write fresh .env from GitLab CI variables
+    # Write fresh .env
     - |
       cat > /opt/ethiopia-construction/.env << EOF
       POSTGRES_DB=$POSTGRES_DB
@@ -24,16 +25,16 @@ deploy:
       NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
       EOF
 
-    # Deploy
-    - rsync -av --delete --exclude='.git' $CI_PROJECT_DIR/ /opt/ethiopia-construction/
+    # Deploy with cache (much faster)
     - cd /opt/ethiopia-construction
-    - docker compose down --remove-orphans
     - docker compose build
+    - docker compose down
     - docker compose up -d
 
     # Verify
-    - sleep 10
+    - sleep 8
     - docker compose ps
+    - curl -f http://localhost/health || echo "Health check pending..."
     - echo "✅ Deployment complete!"
 
   only:
