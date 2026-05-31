@@ -11,6 +11,8 @@ import { ProjectsSection } from "./components/sections/ProjectsSection";
 import { TeamSection } from "./components/sections/TeamSection";
 import { ContactSection } from "./components/sections/ContactSection";
 
+// Empty string = same host = nginx routes /api/* to backend
+// This is correct — no change needed here
 const API = "";
 
 const DEFAULT_SERVICES = [
@@ -72,6 +74,7 @@ export default function TenantPage({
       .catch(() => setLoading(false));
   }, [slug]);
 
+  // ── Loading state ──────────────────────────────────────
   if (loading)
     return (
       <div
@@ -100,6 +103,7 @@ export default function TenantPage({
       </div>
     );
 
+  // ── Not found state ────────────────────────────────────
   if (!tenant)
     return (
       <div
@@ -129,7 +133,9 @@ export default function TenantPage({
       </div>
     );
 
+  // ── Derived values ─────────────────────────────────────
   const accent = tenant.accent_color || "#f4a61d";
+  const primary = tenant.primary_color || "#0a0a0a";
   const contact = tenant.contacts?.[0];
   const services = tenant.services?.length ? tenant.services : DEFAULT_SERVICES;
   const projects = tenant.projects || [];
@@ -137,7 +143,27 @@ export default function TenantPage({
 
   return (
     <>
+      {/*
+        ── THE KEY FIX ──────────────────────────────────────
+        This <style> tag injects the tenant's brand colors as
+        CSS custom properties (variables) on the :root element.
+
+        Every component uses var(--accent) and var(--primary)
+        in the globals.css. Without this, they fall back to
+        the hardcoded default #f4a61d for ALL companies.
+
+        With this, each company gets its own colors dynamically
+        loaded from the database at runtime.
+        ────────────────────────────────────────────────────── */}
+      <style>{`
+        :root {
+          --accent:  ${accent};
+          --primary: ${primary};
+        }
+      `}</style>
+
       <Navbar companyName={tenant.name} accent={accent} onScrollTo={scrollTo} />
+
       <main>
         <HeroSection tenant={tenant} accent={accent} onScrollTo={scrollTo} />
         <StatsSection tenant={tenant} accent={accent} />
@@ -146,6 +172,7 @@ export default function TenantPage({
         <TeamSection team={team} accent={accent} />
         <ContactSection contact={contact} services={services} accent={accent} />
       </main>
+
       <Footer companyName={tenant.name} accent={accent} onScrollTo={scrollTo} />
     </>
   );
