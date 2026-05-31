@@ -25,9 +25,10 @@ deploy:
       EOF
 
     # Deploy
+    - rsync -av --delete --exclude='.git' $CI_PROJECT_DIR/ /opt/ethiopia-construction/
     - cd /opt/ethiopia-construction
-    - docker compose down
-    - docker compose build --no-cache
+    - docker compose down --remove-orphans
+    - docker compose build
     - docker compose up -d
 
     # Verify
