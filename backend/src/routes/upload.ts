@@ -22,32 +22,32 @@ router.post(
       return;
     }
 
-    const { tenant, folder } = req.body;
+    // Get tenant and folder from body or query string
+    const tenant =
+      req.body?.tenant || (req.query?.tenant as string) || "unknown";
+    const folder =
+      req.body?.folder || (req.query?.folder as string) || "uploads";
 
-    // Relative path from DATA_ROOT for storage in DB
     const relativePath = path.relative(DATA_ROOT, req.file.path);
-
-    // Public URL the frontend will use to display the file
     const publicUrl = `${PUBLIC_BASE}/uploads/${tenant}/${folder}/${req.file.filename}`;
 
     try {
-      // Look up tenant id from slug
       const tenantResult = await db.query(
         "SELECT id FROM tenants WHERE slug = $1",
         [tenant],
       );
       const tenantId = tenantResult.rows[0]?.id;
 
-      // Save metadata to DB
       if (tenantId) {
         await db.query(
-          `INSERT INTO media_assets (tenant_id, file_path, public_url, asset_type, file_name, file_size, mime_type)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          `INSERT INTO media_assets
+           (tenant_id, file_path, public_url, asset_type, file_name, file_size, mime_type)
+         VALUES ($1,$2,$3,$4,$5,$6,$7)`,
           [
             tenantId,
             relativePath,
             publicUrl,
-            folder === "logo" ? "logo" : folder === "team" ? "photo" : "photo",
+            folder === "logo" ? "logo" : "photo",
             req.file.originalname,
             req.file.size,
             req.file.mimetype,
@@ -58,7 +58,6 @@ router.post(
       res.json({ url: publicUrl, path: relativePath });
     } catch (err) {
       console.error("Upload metadata error:", err);
-      // File was saved, just metadata failed — still return URL
       res.json({ url: publicUrl, path: relativePath });
     }
   },
