@@ -4,7 +4,7 @@ stages:
 deploy:
   stage: deploy
   tags:
-    - vm-runner
+    - linux_ad_vm-runner
   script:
     - echo "🚀 Deploying to production..."
 
