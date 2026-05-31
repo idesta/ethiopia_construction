@@ -26,14 +26,14 @@ const storage = multer.diskStorage({
 
     // Tenant is required - will be validated by route handler but check here too
     if (!tenant) {
-      cb(new Error("tenant slug is required"));
+      cb(new Error("tenant slug is required"), "");
       return;
     }
 
     try {
       cb(null, getUploadDir(tenant, folder));
     } catch (err) {
-      cb(err as Error);
+      cb(err as Error, "");
     }
   },
   filename(_req, file, cb) {
