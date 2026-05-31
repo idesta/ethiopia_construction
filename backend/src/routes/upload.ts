@@ -23,10 +23,22 @@ router.post(
     }
 
     // Get tenant and folder from body or query string
-    const tenant =
-      req.body?.tenant || (req.query?.tenant as string) || "unknown";
-    const folder =
-      req.body?.folder || (req.query?.folder as string) || "uploads";
+    // IMPORTANT: tenant MUST be provided - do NOT use "unknown" as default
+    const tenant = (
+      req.body?.tenant ||
+      (req.query?.tenant as string) ||
+      ""
+    ).trim();
+    const folder = (
+      req.body?.folder ||
+      (req.query?.folder as string) ||
+      "uploads"
+    ).trim();
+
+    if (!tenant) {
+      res.status(400).json({ message: "tenant slug is required" });
+      return;
+    }
 
     const relativePath = path.relative(DATA_ROOT, req.file.path);
     const publicUrl = `${PUBLIC_BASE}/uploads/${tenant}/${folder}/${req.file.filename}`;

@@ -42,6 +42,14 @@ export default function CompanyEditorPage() {
   });
   const [contact, setContact] = useState(EMPTY_CONTACT);
 
+  // Inject company colors as CSS variables
+  useEffect(() => {
+    const accent = tenant.accent_color || "#f4a61d";
+    const primary = tenant.primary_color || "#1a1a2e";
+    document.documentElement.style.setProperty("--admin-accent", accent);
+    document.documentElement.style.setProperty("--admin-primary", primary);
+  }, [tenant.accent_color, tenant.primary_color]);
+
   useEffect(() => {
     async function load() {
       try {
@@ -277,17 +285,33 @@ export default function CompanyEditorPage() {
               <div className="card-title">🖼️ Logo</div>
             </div>
             <div className="card-body">
-              <ImageUploader
-                label="Company Logo"
-                currentUrl={tenant.logo_url}
-                tenantSlug={tenant.slug || "new"}
-                folder="logo"
-                aspectRatio="1/1"
-                hint="Square logo recommended. PNG with transparent background works best."
-                onUploaded={(url) =>
-                  setTenant((p) => ({ ...p, logo_url: url }))
-                }
-              />
+              {isNew && !tenant.slug ? (
+                <div
+                  style={{
+                    padding: "1.5rem",
+                    textAlign: "center",
+                    background: "#1a1a1a",
+                    borderRadius: "8px",
+                  }}
+                >
+                  <p style={{ color: "#666", fontSize: "13px" }}>
+                    Enter a company name and generate a slug first, then you can
+                    upload a logo.
+                  </p>
+                </div>
+              ) : (
+                <ImageUploader
+                  label="Company Logo"
+                  currentUrl={tenant.logo_url}
+                  tenantSlug={tenant.slug || ""}
+                  folder="logo"
+                  aspectRatio="1/1"
+                  hint="Square logo recommended. PNG with transparent background works best."
+                  onUploaded={(url) =>
+                    setTenant((p) => ({ ...p, logo_url: url }))
+                  }
+                />
+              )}
             </div>
           </div>
 

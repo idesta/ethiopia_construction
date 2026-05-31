@@ -6,7 +6,8 @@ const DATA_ROOT = process.env.UPLOAD_PATH || "/mnt/data/uploads";
 
 function getUploadDir(tenant: string, folder: string): string {
   // Sanitize inputs to prevent path traversal
-  const safeTenant = (tenant || "unknown").replace(/[^a-zA-Z0-9-_]/g, "");
+  // NOTE: tenant MUST be provided - do not default to "unknown"
+  const safeTenant = tenant.replace(/[^a-zA-Z0-9-_]/g, "");
   const safeFolder = (folder || "uploads").replace(/[^a-zA-Z0-9-_]/g, "");
   const dir = path.join(DATA_ROOT, safeTenant, safeFolder);
   if (!fs.existsSync(dir)) {
@@ -17,13 +18,23 @@ function getUploadDir(tenant: string, folder: string): string {
 
 const storage = multer.diskStorage({
   destination(req, _file, cb) {
-    // multer processes body BEFORE this runs for multipart forms
-    // but sometimes body fields arrive after — use a fallback
+    // Extract tenant and folder from body (FormData fields)
     const tenant =
-      req.body?.tenant || (req.query?.tenant as string) || "unknown";
+      req.body?.tenant || ((req.query?.tenant as string) || "").trim();
     const folder =
-      req.body?.folder || (req.query?.folder as string) || "uploads";
-    cb(null, getUploadDir(tenant, folder));
+      req.body?.folder || ((req.query?.folder as string) || "uploads").trim();
+
+    // Tenant is required - will be validated by route handler but check here too
+    if (!tenant) {
+      cb(new Error("tenant slug is required"));
+      return;
+    }
+
+    try {
+      cb(null, getUploadDir(tenant, folder));
+    } catch (err) {
+      cb(err as Error);
+    }
   },
   filename(_req, file, cb) {
     const timestamp = Date.now();

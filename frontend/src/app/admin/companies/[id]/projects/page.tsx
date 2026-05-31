@@ -50,6 +50,16 @@ export default function ProjectsPage() {
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
+  // Inject company colors as CSS variables
+  useEffect(() => {
+    if (tenant) {
+      const accent = tenant.accent_color || "#f4a61d";
+      const primary = tenant.primary_color || "#1a1a2e";
+      document.documentElement.style.setProperty("--admin-accent", accent);
+      document.documentElement.style.setProperty("--admin-primary", primary);
+    }
+  }, [tenant?.accent_color, tenant?.primary_color]);
+
   useEffect(() => {
     async function load() {
       try {
