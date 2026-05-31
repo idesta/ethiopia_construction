@@ -6,9 +6,16 @@ import { requireAuth, AuthRequest } from "../middleware/auth";
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || "change-this-secret-in-production";
+
+// Helper: Determine if connection is secure (via proxy headers or direct HTTPS)
+const isSecure = (req: Request): boolean => {
+  return (
+    req.header("x-forwarded-proto") === "https" || req.protocol === "https"
+  );
+};
+
 const COOKIE_OPTS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
   sameSite: "lax" as const,
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
@@ -43,7 +50,9 @@ router.post("/login", async (req: Request, res: Response) => {
     const token = jwt.sign({ email: user.email }, JWT_SECRET, {
       expiresIn: "7d",
     });
-    res.cookie("token", token, COOKIE_OPTS);
+
+    // Set secure flag based on actual connection protocol (via proxy headers)
+    res.cookie("token", token, { ...COOKIE_OPTS, secure: isSecure(req) });
     res.json({ user: { email: user.email } });
   } catch (err) {
     console.error("Login error:", err);
