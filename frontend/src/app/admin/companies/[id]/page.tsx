@@ -21,6 +21,12 @@ const EMPTY_CONTACT = {
   maps_url: "",
 };
 
+const COLOR_REGEX = /^#[0-9A-Fa-f]{6}$/;
+
+function normalizeColor(value: string | undefined, fallback: string) {
+  return value && COLOR_REGEX.test(value) ? value : fallback;
+}
+
 export default function CompanyEditorPage() {
   const router = useRouter();
   const params = useParams();
@@ -44,8 +50,8 @@ export default function CompanyEditorPage() {
 
   // Inject company colors as CSS variables
   useEffect(() => {
-    const accent = tenant.accent_color || "#f4a61d";
-    const primary = tenant.primary_color || "#1a1a2e";
+    const accent = normalizeColor(tenant.accent_color, "#f4a61d");
+    const primary = normalizeColor(tenant.primary_color, "#1a1a2e");
     document.documentElement.style.setProperty("--admin-accent", accent);
     document.documentElement.style.setProperty("--admin-primary", primary);
   }, [tenant.accent_color, tenant.primary_color]);
@@ -99,15 +105,22 @@ export default function CompanyEditorPage() {
       showToast("Name and slug are required", "error");
       return;
     }
+
+    const payload = {
+      ...tenant,
+      primary_color: normalizeColor(tenant.primary_color, "#1a1a2e"),
+      accent_color: normalizeColor(tenant.accent_color, "#f4a61d"),
+    };
+
     setSaving(true);
     try {
       if (isNew) {
-        const created = await tenantsApi.create(tenant);
+        const created = await tenantsApi.create(payload);
         await contactsApi.upsert(created.id, contact);
         showToast("Company created!", "success");
         router.push(`/admin/companies/${created.id}`);
       } else {
-        await tenantsApi.update(params.id as string, tenant);
+        await tenantsApi.update(params.id as string, payload);
         await contactsApi.upsert(params.id as string, contact);
         showToast("Changes saved!", "success");
       }
@@ -118,9 +131,30 @@ export default function CompanyEditorPage() {
     }
   }
 
+  async function handleDelete() {
+    if (
+      !confirm(
+        "Delete this company and all of its files? This cannot be undone.",
+      )
+    ) {
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await tenantsApi.remove(params.id as string);
+      showToast("Company deleted", "success");
+      router.push("/admin/dashboard");
+    } catch (err: any) {
+      showToast(err.message || "Delete failed", "error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   if (loading) return <LoadingScreen />;
 
-  const accent = tenant.accent_color || "#f4a61d";
+  const accent = normalizeColor(tenant.accent_color, "#f4a61d");
 
   return (
     <div className="admin-layout">
@@ -174,6 +208,14 @@ export default function CompanyEditorPage() {
                   onClick={() => window.open(`/sites/${tenant.slug}`, "_blank")}
                 >
                   👁️ Preview
+                </button>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleDelete}
+                  disabled={saving}
+                  style={{ borderColor: "#ef4444", color: "#ef4444" }}
+                >
+                  Delete Company
                 </button>
               </>
             )}
@@ -330,7 +372,7 @@ export default function CompanyEditorPage() {
                     <input
                       type="color"
                       className="color-swatch"
-                      value={tenant.primary_color || "#1a1a2e"}
+                      value={normalizeColor(tenant.primary_color, "#1a1a2e")}
                       onChange={(e) =>
                         setTenant((p) => ({
                           ...p,
@@ -358,7 +400,7 @@ export default function CompanyEditorPage() {
                     <input
                       type="color"
                       className="color-swatch"
-                      value={tenant.accent_color || "#f4a61d"}
+                      value={normalizeColor(tenant.accent_color, "#f4a61d")}
                       onChange={(e) =>
                         setTenant((p) => ({
                           ...p,
@@ -390,7 +432,7 @@ export default function CompanyEditorPage() {
               >
                 <div
                   style={{
-                    background: tenant.primary_color,
+                    background: normalizeColor(tenant.primary_color, "#1a1a2e"),
                     padding: "1.5rem",
                     display: "flex",
                     alignItems: "center",

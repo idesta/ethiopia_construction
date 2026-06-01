@@ -1,9 +1,15 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
 const client_1 = require("../db/client");
 const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
+const DATA_ROOT = process.env.UPLOAD_PATH || "/mnt/data/uploads";
 // GET /api/tenants  — list all (auth required)
 router.get("/", auth_1.requireAuth, async (_req, res) => {
     try {
@@ -106,6 +112,29 @@ router.post("/", auth_1.requireAuth, async (req, res) => {
         else {
             res.status(500).json({ message: "Server error" });
         }
+    }
+});
+// DELETE /api/tenants/:id  — delete tenant and remove uploaded files
+router.delete("/:id", auth_1.requireAuth, async (req, res) => {
+    try {
+        const { rows } = await client_1.db.query("SELECT slug FROM tenants WHERE id = $1", [
+            req.params.id,
+        ]);
+        if (!rows[0]) {
+            res.status(404).json({ message: "Not found" });
+            return;
+        }
+        const slug = rows[0].slug;
+        const tenantUploadDir = path_1.default.join(DATA_ROOT, slug);
+        if (fs_1.default.existsSync(tenantUploadDir)) {
+            fs_1.default.rmSync(tenantUploadDir, { recursive: true, force: true });
+        }
+        await client_1.db.query("DELETE FROM tenants WHERE id = $1", [req.params.id]);
+        res.json({ message: "Tenant deleted" });
+    }
+    catch (err) {
+        console.error("Tenant delete failed:", err);
+        res.status(500).json({ message: "Delete failed" });
     }
 });
 // PUT /api/tenants/:id  — update

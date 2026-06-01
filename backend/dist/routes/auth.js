@@ -12,7 +12,7 @@ const router = (0, express_1.Router)();
 const JWT_SECRET = process.env.JWT_SECRET || "change-this-secret-in-production";
 // Helper: Determine if connection is secure (via proxy headers or direct HTTPS)
 const isSecure = (req) => {
-    return req.header("x-forwarded-proto") === "https" || req.protocol === "https";
+    return (req.header("x-forwarded-proto") === "https" || req.protocol === "https");
 };
 const COOKIE_OPTS = {
     httpOnly: true,

@@ -15,6 +15,12 @@ import { ContactSection } from "./components/sections/ContactSection";
 // This is correct — no change needed here
 const API = "";
 
+const HEX_COLOR = /^#[0-9A-Fa-f]{6}$/;
+
+function validColor(value: string | undefined, fallback: string) {
+  return value && HEX_COLOR.test(value) ? value : fallback;
+}
+
 const DEFAULT_SERVICES = [
   {
     id: "1",
@@ -134,8 +140,8 @@ export default function TenantPage({
     );
 
   // ── Derived values ─────────────────────────────────────
-  const accent = tenant.accent_color || "#f4a61d";
-  const primary = tenant.primary_color || "#0a0a0a";
+  const accent = validColor(tenant.accent_color, "#f4a61d");
+  const primary = validColor(tenant.primary_color, "#0a0a0a");
   const contact = tenant.contacts?.[0];
   const services = tenant.services?.length ? tenant.services : DEFAULT_SERVICES;
   const projects = tenant.projects || [];

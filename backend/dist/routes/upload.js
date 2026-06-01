@@ -14,28 +14,45 @@ const DATA_ROOT = process.env.UPLOAD_PATH || "/mnt/data/uploads";
 const PUBLIC_BASE = process.env.PUBLIC_URL || "http://localhost:4000";
 // POST /api/upload
 // Body: multipart/form-data  { file, tenant (slug), folder }
-router.post("/", auth_1.requireAuth, upload_1.upload.single("file"), async (req, res) => {
+router.post("/", auth_1.requireAuth, (req, res, next) => {
+    upload_1.upload.single("file")(req, res, (err) => {
+        if (err) {
+            console.error("Upload error:", err);
+            return res
+                .status(400)
+                .json({ message: err.message || "Upload failed" });
+        }
+        next();
+    });
+}, async (req, res) => {
     if (!req.file) {
         res.status(400).json({ message: "No file uploaded" });
         return;
     }
-    const { tenant, folder } = req.body;
-    // Relative path from DATA_ROOT for storage in DB
+    const tenant = (req.body?.tenant ||
+        req.query?.tenant ||
+        "").trim();
+    const folder = (req.body?.folder ||
+        req.query?.folder ||
+        "uploads").trim();
+    if (!tenant) {
+        res.status(400).json({ message: "tenant slug is required" });
+        return;
+    }
     const relativePath = path_1.default.relative(DATA_ROOT, req.file.path);
-    // Public URL the frontend will use to display the file
-    const publicUrl = `${PUBLIC_BASE}/uploads/${tenant}/${folder}/${req.file.filename}`;
+    const baseUrl = process.env.PUBLIC_URL || `${req.protocol}://${req.get("host")}`;
+    const publicUrl = `${baseUrl}/uploads/${tenant}/${folder}/${req.file.filename}`;
     try {
-        // Look up tenant id from slug
         const tenantResult = await client_1.db.query("SELECT id FROM tenants WHERE slug = $1", [tenant]);
         const tenantId = tenantResult.rows[0]?.id;
-        // Save metadata to DB
         if (tenantId) {
-            await client_1.db.query(`INSERT INTO media_assets (tenant_id, file_path, public_url, asset_type, file_name, file_size, mime_type)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)`, [
+            await client_1.db.query(`INSERT INTO media_assets
+           (tenant_id, file_path, public_url, asset_type, file_name, file_size, mime_type)
+         VALUES ($1,$2,$3,$4,$5,$6,$7)`, [
                 tenantId,
                 relativePath,
                 publicUrl,
-                folder === "logo" ? "logo" : folder === "team" ? "photo" : "photo",
+                folder === "logo" ? "logo" : "photo",
                 req.file.originalname,
                 req.file.size,
                 req.file.mimetype,
@@ -45,7 +62,6 @@ router.post("/", auth_1.requireAuth, upload_1.upload.single("file"), async (req,
     }
     catch (err) {
         console.error("Upload metadata error:", err);
-        // File was saved, just metadata failed — still return URL
         res.json({ url: publicUrl, path: relativePath });
     }
 });

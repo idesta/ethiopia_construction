@@ -57,6 +57,8 @@ export const tenants = {
 
   update: (id: string, data: Partial<Tenant>) =>
     put<Tenant>(`/api/tenants/${id}`, data),
+
+  remove: (id: string) => del(`/api/tenants/${id}`),
 };
 
 // ── Contacts ─────────────────────────────

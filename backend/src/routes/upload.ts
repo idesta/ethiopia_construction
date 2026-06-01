@@ -15,15 +15,23 @@ const PUBLIC_BASE = process.env.PUBLIC_URL || "http://localhost:4000";
 router.post(
   "/",
   requireAuth,
-  upload.single("file"),
+  (req, res, next) => {
+    upload.single("file")(req, res, (err) => {
+      if (err) {
+        console.error("Upload error:", err);
+        return res
+          .status(400)
+          .json({ message: err.message || "Upload failed" });
+      }
+      next();
+    });
+  },
   async (req: Request, res: Response) => {
     if (!req.file) {
       res.status(400).json({ message: "No file uploaded" });
       return;
     }
 
-    // Get tenant and folder from body or query string
-    // IMPORTANT: tenant MUST be provided - do NOT use "unknown" as default
     const tenant = (
       req.body?.tenant ||
       (req.query?.tenant as string) ||
@@ -41,7 +49,9 @@ router.post(
     }
 
     const relativePath = path.relative(DATA_ROOT, req.file.path);
-    const publicUrl = `${PUBLIC_BASE}/uploads/${tenant}/${folder}/${req.file.filename}`;
+    const baseUrl =
+      process.env.PUBLIC_URL || `${req.protocol}://${req.get("host")}`;
+    const publicUrl = `${baseUrl}/uploads/${tenant}/${folder}/${req.file.filename}`;
 
     try {
       const tenantResult = await db.query(
