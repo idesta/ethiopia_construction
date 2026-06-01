@@ -120,9 +120,9 @@ export async function uploadFile(
   folder: string, // 'logo' | 'projects' | 'team'
 ): Promise<{ url: string }> {
   const formData = new FormData();
-  formData.append("file", file);
   formData.append("tenant", tenantSlug);
   formData.append("folder", folder);
+  formData.append("file", file);
 
   const res = await fetch(`${BASE}/api/upload`, {
     method: "POST",
