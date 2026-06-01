@@ -21,6 +21,36 @@ function validColor(value: string | undefined, fallback: string) {
   return value && HEX_COLOR.test(value) ? value : fallback;
 }
 
+function normalizeMediaUrl(value: string | undefined) {
+  if (!value) return value;
+  try {
+    const url = new URL(
+      value,
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "http://localhost",
+    );
+    return url.pathname + url.search + url.hash;
+  } catch {
+    return value;
+  }
+}
+
+function normalizeTenantMediaUrls(tenant: Tenant) {
+  return {
+    ...tenant,
+    logo_url: normalizeMediaUrl(tenant.logo_url) || "",
+    projects: (tenant.projects || []).map((project) => ({
+      ...project,
+      cover_url: normalizeMediaUrl(project.cover_url) || "",
+    })),
+    team: (tenant.team || []).map((member) => ({
+      ...member,
+      photo_url: normalizeMediaUrl(member.photo_url) || "",
+    })),
+  } as Tenant;
+}
+
 const DEFAULT_SERVICES = [
   {
     id: "1",
@@ -74,7 +104,9 @@ export default function TenantPage({
     fetch(`${API}/api/tenants/slug/${slug}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        setTenant(data);
+        if (data) {
+          setTenant(normalizeTenantMediaUrls(data));
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -168,7 +200,12 @@ export default function TenantPage({
         }
       `}</style>
 
-      <Navbar companyName={tenant.name} accent={accent} onScrollTo={scrollTo} />
+      <Navbar
+        companyName={tenant.name}
+        logoUrl={tenant.logo_url}
+        accent={accent}
+        onScrollTo={scrollTo}
+      />
 
       <main>
         <HeroSection tenant={tenant} accent={accent} onScrollTo={scrollTo} />

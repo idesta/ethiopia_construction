@@ -8,7 +8,6 @@ import { upload } from "../middleware/upload";
 const router = Router();
 
 const DATA_ROOT = process.env.UPLOAD_PATH || "/mnt/data/uploads";
-const PUBLIC_BASE = process.env.PUBLIC_URL || "http://localhost:4000";
 
 // POST /api/upload
 // Body: multipart/form-data  { file, tenant (slug), folder }
@@ -49,9 +48,7 @@ router.post(
     }
 
     const relativePath = path.relative(DATA_ROOT, req.file.path);
-    const baseUrl =
-      process.env.PUBLIC_URL || `${req.protocol}://${req.get("host")}`;
-    const publicUrl = `${baseUrl}/uploads/${tenant}/${folder}/${req.file.filename}`;
+    const publicUrl = `/uploads/${tenant}/${folder}/${req.file.filename}`;
 
     try {
       const tenantResult = await db.query(

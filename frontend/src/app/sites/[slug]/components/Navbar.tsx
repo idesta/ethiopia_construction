@@ -8,11 +8,17 @@ const NAV_LINKS = ["services", "projects", "team", "contact"];
 
 interface NavbarProps {
   companyName: string;
+  logoUrl?: string;
   accent: string;
   onScrollTo: (id: string) => void;
 }
 
-export function Navbar({ companyName, accent, onScrollTo }: NavbarProps) {
+export function Navbar({
+  companyName,
+  logoUrl,
+  accent,
+  onScrollTo,
+}: NavbarProps) {
   const { theme, toggle } = useTheme();
   const activeSection = useActiveSection();
   const [scrolled, setScrolled] = useState(false);
@@ -41,8 +47,18 @@ export function Navbar({ companyName, accent, onScrollTo }: NavbarProps) {
     <>
       <nav className={`nav${scrolled ? " scrolled" : ""}`}>
         <button className="nav-logo" onClick={() => handleNav("home")}>
-          {shortName}
-          <span style={{ color: accent }}>.</span>
+          {logoUrl ? (
+            <img
+              className="nav-logo-image"
+              src={logoUrl}
+              alt={`${companyName} logo`}
+            />
+          ) : (
+            <>
+              {shortName}
+              <span style={{ color: accent }}>.</span>
+            </>
+          )}
         </button>
         <ul className="nav-links">
           {NAV_LINKS.map((link) => (

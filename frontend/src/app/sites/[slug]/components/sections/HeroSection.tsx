@@ -30,6 +30,15 @@ export function HeroSection({ tenant, accent, onScrollTo }: HeroSectionProps) {
       {yearsActive && <div className="hero-number">{yearsActive}</div>}
 
       <div className="hero-content">
+        {tenant.logo_url ? (
+          <div className="hero-brand">
+            <img
+              src={tenant.logo_url}
+              alt={`${tenant.name} logo`}
+              className="hero-logo"
+            />
+          </div>
+        ) : null}
         <div className="hero-eyebrow" style={{ color: accent }}>
           <span className="hero-eyebrow-line" style={{ background: accent }} />
           {contact?.city || "Addis Ababa"}, Ethiopia

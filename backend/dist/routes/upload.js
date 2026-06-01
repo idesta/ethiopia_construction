@@ -11,7 +11,6 @@ const auth_1 = require("../middleware/auth");
 const upload_1 = require("../middleware/upload");
 const router = (0, express_1.Router)();
 const DATA_ROOT = process.env.UPLOAD_PATH || "/mnt/data/uploads";
-const PUBLIC_BASE = process.env.PUBLIC_URL || "http://localhost:4000";
 // POST /api/upload
 // Body: multipart/form-data  { file, tenant (slug), folder }
 router.post("/", auth_1.requireAuth, (req, res, next) => {
@@ -40,8 +39,7 @@ router.post("/", auth_1.requireAuth, (req, res, next) => {
         return;
     }
     const relativePath = path_1.default.relative(DATA_ROOT, req.file.path);
-    const baseUrl = process.env.PUBLIC_URL || `${req.protocol}://${req.get("host")}`;
-    const publicUrl = `${baseUrl}/uploads/${tenant}/${folder}/${req.file.filename}`;
+    const publicUrl = `/uploads/${tenant}/${folder}/${req.file.filename}`;
     try {
         const tenantResult = await client_1.db.query("SELECT id FROM tenants WHERE slug = $1", [tenant]);
         const tenantId = tenantResult.rows[0]?.id;
