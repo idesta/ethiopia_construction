@@ -51,37 +51,6 @@ function normalizeTenantMediaUrls(tenant: Tenant) {
   } as Tenant;
 }
 
-const DEFAULT_SERVICES = [
-  {
-    id: "1",
-    title: "Building Construction",
-    icon: "🏗️",
-    description:
-      "Residential and commercial buildings built to the highest structural standards.",
-  },
-  {
-    id: "2",
-    title: "Road & Infrastructure",
-    icon: "🛣️",
-    description:
-      "Highway, road, and civil infrastructure projects across Ethiopia.",
-  },
-  {
-    id: "3",
-    title: "Interior & Design",
-    icon: "🏛️",
-    description:
-      "Architectural interior finishes combining function with elegance.",
-  },
-  {
-    id: "4",
-    title: "Project Management",
-    icon: "📐",
-    description:
-      "End-to-end supervision, planning, and delivery of complex projects.",
-  },
-];
-
 function scrollTo(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 }
@@ -175,7 +144,7 @@ export default function TenantPage({
   const accent = validColor(tenant.accent_color, "#f4a61d");
   const primary = validColor(tenant.primary_color, "#0a0a0a");
   const contact = tenant.contacts?.[0];
-  const services = tenant.services?.length ? tenant.services : DEFAULT_SERVICES;
+  const services = tenant.services || [];
   const projects = tenant.projects || [];
   const team = tenant.team || [];
 

@@ -21,18 +21,35 @@ export function ServicesSection({
             highlight="Services"
             accent={accent}
           />
-          <div className="services-grid">
-            {services.map((s, i) => (
-              <div className="service-card" key={s.id}>
-                <span className="service-icon">{s.icon || "🏗️"}</span>
-                <div className="service-title">{s.title}</div>
-                <p className="service-desc">{s.description}</p>
-                <div className="service-number">
-                  {String(i + 1).padStart(2, "0")}
+          {services.length === 0 ? (
+            <div
+              style={{
+                padding: "4rem 0",
+                textAlign: "center",
+                color: "#aaa",
+                fontSize: "0.95rem",
+                lineHeight: 1.7,
+              }}
+            >
+              <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>⚙️</div>
+              <p>
+                Services will appear here once added from the admin dashboard.
+              </p>
+            </div>
+          ) : (
+            <div className="services-grid">
+              {services.map((s, i) => (
+                <div className="service-card" key={s.id}>
+                  <span className="service-icon">{s.icon || "🏗️"}</span>
+                  <div className="service-title">{s.title}</div>
+                  <p className="service-desc">{s.description}</p>
+                  <div className="service-number">
+                    {String(i + 1).padStart(2, "0")}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </FadeSection>

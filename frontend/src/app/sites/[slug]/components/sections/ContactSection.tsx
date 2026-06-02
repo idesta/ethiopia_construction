@@ -112,8 +112,12 @@ export function ContactSection({
               </div>
               <div className="form-group">
                 <label className="form-label">Project Type</label>
-                <select className="form-input">
-                  <option value="">Select a service...</option>
+                <select className="form-input" disabled={services.length === 0}>
+                  <option value="">
+                    {services.length
+                      ? "Select a service..."
+                      : "No services available yet"}
+                  </option>
                   {services.map((s) => (
                     <option key={s.id} value={s.title}>
                       {s.title}
