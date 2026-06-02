@@ -3,7 +3,8 @@ import { Resend } from "resend";
 import { db } from "../db/client";
 
 const router = Router();
-const resend = new Resend(process.env.RESEND_API_KEY);
+const RESEND_KEY = process.env.RESEND_API_KEY || "";
+const resend = RESEND_KEY ? new Resend(RESEND_KEY) : null;
 const MAIL_FROM = process.env.MAIL_FROM || "onboarding@resend.dev";
 
 // POST /api/contact
@@ -99,17 +100,31 @@ router.post("/", async (req: Request, res: Response) => {
       </div>
     `;
 
-    // Send the email via Resend
-    const { error } = await resend.emails.send({
-      from: MAIL_FROM,
-      to: company.email,
-      replyTo: email || undefined,
-      subject: `New Enquiry from ${name} — ${company.name}`,
-      html,
-    });
+    // If Resend is not configured, return a clear error instead of crashing
+    if (!resend) {
+      console.warn("Resend API key not configured; skipping email send.");
+      res.status(500).json({ message: "Email service not configured" });
+      return;
+    }
 
-    if (error) {
-      console.error("Resend error:", error);
+    // Send the email via Resend
+    try {
+      const result = await resend.emails.send({
+        from: MAIL_FROM,
+        to: company.email,
+        replyTo: email || undefined,
+        subject: `New Enquiry from ${name} — ${company.name}`,
+        html,
+      });
+
+      // Resend client returns an object; if it contains an `error` key treat as failure
+      if ((result as any).error) {
+        console.error("Resend error:", (result as any).error);
+        res.status(500).json({ message: "Failed to send email" });
+        return;
+      }
+    } catch (err) {
+      console.error("Resend send error:", err);
       res.status(500).json({ message: "Failed to send email" });
       return;
     }
