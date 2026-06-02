@@ -182,7 +182,12 @@ export default function TenantPage({
         <ServicesSection services={services} accent={accent} />
         <ProjectsSection projects={projects} accent={accent} />
         <TeamSection team={team} accent={accent} />
-        <ContactSection contact={contact} services={services} accent={accent} />
+        <ContactSection
+          contact={contact}
+          services={services}
+          accent={accent}
+          slug={slug}
+        />
       </main>
 
       <Footer companyName={tenant.name} accent={accent} onScrollTo={scrollTo} />

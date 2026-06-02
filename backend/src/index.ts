@@ -10,6 +10,7 @@ import projectRoutes from "./routes/projects";
 import teamRoutes from "./routes/team";
 import serviceRoutes from "./routes/services";
 import uploadRoutes from "./routes/upload";
+import contactRoute from "./routes/contact";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -61,6 +62,8 @@ app.get("/health", (_req, res) => {
 app.use((_req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
+
+app.use("/api/contact", contactRoute);
 
 // ── Start ────────────────────────────────
 app.listen(PORT, () => {

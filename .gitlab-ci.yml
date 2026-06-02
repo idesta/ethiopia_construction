@@ -23,6 +23,8 @@ deploy:
       PUBLIC_URL=$PUBLIC_URL
       FRONTEND_URL=$FRONTEND_URL
       NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+      RESEND_API_KEY=$RESEND_API_KEY
+      MAIL_FROM=$MAIL_FROM
       EOF
 
     # Deploy with cache (much faster)
