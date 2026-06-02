@@ -119,6 +119,9 @@ img {
   text-transform: uppercase;
   color: var(--text-primary);
 }
+.nav:not(.scrolled) .nav-logo {
+  color: #fff;
+}
 .nav-logo-image {
   display: block;
   max-height: 2.25rem;
@@ -142,6 +145,9 @@ img {
   transition: color 0.2s;
   padding-bottom: 2px;
 }
+.nav:not(.scrolled) .nav-link {
+  color: rgba(255, 255, 255, 0.75);
+}
 .nav-link::after {
   content: "";
   position: absolute;
@@ -153,9 +159,13 @@ img {
   transform: scaleX(0);
   transition: transform 0.3s ease;
 }
-.nav-link:hover,
-.nav-link.active {
+.nav.scrolled .nav-link:hover,
+.nav.scrolled .nav-link.active {
   color: var(--text-primary);
+}
+.nav:not(.scrolled) .nav-link:hover,
+.nav:not(.scrolled) .nav-link.active {
+  color: #fff;
 }
 .nav-link:hover::after,
 .nav-link.active::after {
@@ -176,6 +186,9 @@ img {
 }
 .theme-toggle:hover {
   transform: rotate(20deg);
+}
+.nav:not(.scrolled) .theme-toggle {
+  color: #fff;
 }
 .nav-cta {
   font-family: "Barlow Condensed", sans-serif;
@@ -204,6 +217,9 @@ img {
   height: 1.5px;
   background: var(--text-primary);
   transition: all 0.3s ease;
+}
+.nav:not(.scrolled) .hamburger span {
+  background: #fff;
 }
 .hamburger.open span:nth-child(1) {
   transform: translateY(6.5px) rotate(45deg);
@@ -338,6 +354,14 @@ img {
   padding: 1rem 2.5rem;
   transition: all 0.3s ease;
   display: inline-block;
+}
+.hero .btn-outline {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.hero .btn-outline:hover {
+  color: var(--accent, #f4a61d);
+  border-color: var(--accent, #f4a61d);
 }
 .btn-outline:hover {
   border-color: var(--accent, #f4a61d);
