@@ -172,20 +172,17 @@ export function ContactSection({
                       "Your enquiry has been delivered. The team will get back to you shortly."}
                   </p>
                   {successMsg.includes("not configured") && (
-                    <div
+                    <p
                       style={{
                         marginTop: "1rem",
-                        padding: "1rem",
-                        background: "#fff7d6",
-                        border: "1px solid #f5c94c",
-                        borderRadius: "8px",
-                        color: "#92400e",
+                        color: "#f5c94c",
                         fontSize: "0.95rem",
+                        lineHeight: 1.6,
                       }}
                     >
-                      ⚠️ Email service is not configured. Your message was
-                      received, but no notification email was sent.
-                    </div>
+                      ⚠️ Note: email delivery is currently disabled for this
+                      site. Your message was accepted locally.
+                    </p>
                   )}
                   <button
                     onClick={() => setFormState("idle")}
