@@ -51,6 +51,7 @@ app.use("/api/contacts", contactRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/team", teamRoutes);
 app.use("/api/services", serviceRoutes);
+app.use("/api/upload", uploadRoutes);
 
 // ── Health check ──────────────────────────
 app.get("/health", (_req, res) => {
