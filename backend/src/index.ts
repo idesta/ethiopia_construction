@@ -51,19 +51,19 @@ app.use("/api/contacts", contactRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/team", teamRoutes);
 app.use("/api/services", serviceRoutes);
-app.use("/api/upload", uploadRoutes);
 
 // ── Health check ──────────────────────────
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
+// Mount public contact route
+app.use("/api/contact", contactRoute);
+
 // ── 404 handler ───────────────────────────
 app.use((_req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
-
-app.use("/api/contact", contactRoute);
 
 // ── Start ────────────────────────────────
 app.listen(PORT, () => {
