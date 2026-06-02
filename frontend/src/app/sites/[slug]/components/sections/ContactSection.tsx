@@ -22,6 +22,7 @@ export function ContactSection({
 }: ContactSectionProps) {
   const [formState, setFormState] = useState<FormState>("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -59,6 +60,7 @@ export function ContactSection({
         throw new Error(data.message || "Failed to send");
       }
 
+      setSuccessMsg(data.message || "Your enquiry has been delivered.");
       setFormState("success");
       setForm({ name: "", phone: "", email: "", service: "", message: "" });
     } catch (err: any) {
@@ -166,9 +168,25 @@ export function ContactSection({
                       lineHeight: 1.6,
                     }}
                   >
-                    Your enquiry has been delivered. The team will get back to
-                    you shortly.
+                    {successMsg ||
+                      "Your enquiry has been delivered. The team will get back to you shortly."}
                   </p>
+                  {successMsg.includes("not configured") && (
+                    <div
+                      style={{
+                        marginTop: "1rem",
+                        padding: "1rem",
+                        background: "#fff7d6",
+                        border: "1px solid #f5c94c",
+                        borderRadius: "8px",
+                        color: "#92400e",
+                        fontSize: "0.95rem",
+                      }}
+                    >
+                      ⚠️ Email service is not configured. Your message was
+                      received, but no notification email was sent.
+                    </div>
+                  )}
                   <button
                     onClick={() => setFormState("idle")}
                     style={{
@@ -230,8 +248,13 @@ export function ContactSection({
                       className="form-input"
                       value={form.service}
                       onChange={set("service")}
+                      disabled={services.length === 0}
                     >
-                      <option value="">Select a service...</option>
+                      <option value="">
+                        {services.length
+                          ? "Select a service..."
+                          : "No services available yet"}
+                      </option>
                       {services.map((s) => (
                         <option key={s.id} value={s.title}>
                           {s.title}

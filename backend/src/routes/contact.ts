@@ -100,14 +100,18 @@ router.post("/", async (req: Request, res: Response) => {
       </div>
     `;
 
-    // If Resend is not configured, return a clear error instead of crashing
+    // If Resend is not configured, accept the contact form and return success
+    // so the frontend works while email integration is still being configured.
     if (!resend) {
       console.warn("Resend API key not configured; skipping email send.");
-      res.status(500).json({ message: "Email service not configured" });
+      res.json({
+        success: true,
+        message:
+          "Message received. Email service is not configured, so no email was sent.",
+      });
       return;
     }
 
-    // Send the email via Resend
     try {
       const result = await resend.emails.send({
         from: MAIL_FROM,
@@ -117,7 +121,6 @@ router.post("/", async (req: Request, res: Response) => {
         html,
       });
 
-      // Resend client returns an object; if it contains an `error` key treat as failure
       if ((result as any).error) {
         console.error("Resend error:", (result as any).error);
         res.status(500).json({ message: "Failed to send email" });
