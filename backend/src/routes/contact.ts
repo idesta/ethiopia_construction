@@ -5,7 +5,8 @@ import { db } from "../db/client";
 const router = Router();
 const RESEND_KEY = process.env.RESEND_API_KEY || "";
 const resend = RESEND_KEY ? new Resend(RESEND_KEY) : null;
-const MAIL_FROM = process.env.MAIL_FROM || "ethioconstruction.abrdns.com";
+const MAIL_FROM =
+  process.env.MAIL_FROM || "noreply@ethioconstruction.abrdns.com";
 
 // POST /api/contact
 router.post("/", async (req: Request, res: Response) => {

@@ -38,4 +38,4 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts # Already handeled inside the frontend folder.
+next-env.d.ts # Already handeled inside the frontend.
