@@ -7,6 +7,7 @@ const RESEND_KEY = process.env.RESEND_API_KEY || "";
 const resend = RESEND_KEY ? new Resend(RESEND_KEY) : null;
 const MAIL_FROM =
   process.env.MAIL_FROM || "noreply@ethioconstruction.abrdns.com";
+const MAIL_FROM_NAME = process.env.MAIL_FROM_NAME || "EthioConstruction Web";
 
 // POST /api/contact
 router.post("/", async (req: Request, res: Response) => {
@@ -115,7 +116,7 @@ router.post("/", async (req: Request, res: Response) => {
 
     try {
       const result = await resend.emails.send({
-        from: MAIL_FROM,
+        from: `${MAIL_FROM_NAME} <${MAIL_FROM}>`,
         to: company.email,
         replyTo: email || undefined,
         subject: `New Enquiry from ${name} — ${company.name}`,

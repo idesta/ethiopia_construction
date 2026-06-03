@@ -25,6 +25,7 @@ deploy:
       NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
       RESEND_API_KEY=$RESEND_API_KEY
       MAIL_FROM=$MAIL_FROM
+      MAIL_FROM_NAME=$MAIL_FROM_NAME
       EOF
 
     # Deploy with cache (much faster)

@@ -45,6 +45,7 @@ services:
       ADMIN_CREATE_SECRET: ${ADMIN_CREATE_SECRET}
       RESEND_API_KEY: ${RESEND_API_KEY}
       MAIL_FROM: ${MAIL_FROM}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME}
     volumes:
       - /mnt/data/uploads:/mnt/data/uploads # data disk
     networks:
