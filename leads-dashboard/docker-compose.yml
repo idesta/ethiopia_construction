@@ -1,0 +1,15 @@
+services:
+  leads-dashboard:
+    build: .
+    container_name: leads_dashboard
+    restart: unless-stopped
+    ports:
+      - "5555:5555"
+    volumes:
+      - /mnt/data/leads:/mnt/data/leads:ro
+    environment:
+      - NODE_ENV=production
+      - PORT=5555
+      - LEADS_DIR=/mnt/data/leads
+    mem_limit: 512m
+    cpus: "0.5"

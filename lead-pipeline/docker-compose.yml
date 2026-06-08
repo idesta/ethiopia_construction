@@ -1,0 +1,23 @@
+services:
+  pipeline:
+    build: .
+    container_name: lead_pipeline
+    restart: "no"              # run-and-stop, not always-on
+
+    # Resource limits — protect your SaaS
+    mem_limit: 700m
+    cpus: "1.0"
+
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TEST_MODE=${TEST_MODE:-false}
+      - TEST_LIMIT=${TEST_LIMIT:-5}
+      - CITY=${CITY:-Addis Ababa}
+      - KEYWORD=${KEYWORD:-Construction Company}
+
+    volumes:
+      # Output goes to your data disk
+      - /mnt/data/leads:/output
+
+    # Completely isolated — cannot reach your SaaS network
+    network_mode: bridge
