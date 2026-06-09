@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts # Already handeled inside the frontend.
+
+# Lead pipeline - secrets and output data
+lead-pipeline/.env
+lead-pipeline/output/
+
+# Leads dashboard - secrets
+leads-dashboard/.env
+
+# Large archive files
+*.tar.gz
