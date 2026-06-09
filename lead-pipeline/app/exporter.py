@@ -19,8 +19,9 @@ COLUMN_ORDER = [
     "youtube_url", "tiktok_url", "telegram_url",
     "website_status",
     "brand_primary_color", "brand_accent_color", "brand_colors_found",
-    "lead_score", "lead_priority",
-    "recommended_service", "data_source", "collection_date",
+    "lead_score", "lead_priority", "recommended_service",
+    "completeness_score", "completeness_pct", "completeness_label",
+    "data_source", "collection_date",
 ]
 
 def export(leads: list[dict], label: str = "test"):
