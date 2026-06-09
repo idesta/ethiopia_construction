@@ -3,12 +3,13 @@ import json
 import logging
 import os
 from datetime import datetime
+from config import OUTPUT_DIR
 
 import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-OUTPUT_DIR = os.getenv("OUTPUT_DIR", "/output")
+#OUTPUT_DIR = os.getenv("OUTPUT_DIR", "/output")
 
 COLUMN_ORDER = [
     "company_name", "business_category", "phone", "email",

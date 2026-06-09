@@ -36,6 +36,23 @@ deploy:
       CITY=Addis Ababa
       KEYWORD=Construction Company
       EOF
+    # ── Write lead-pipeline .env ──────────────────────────
+    - |
+      cat > /opt/ethiopia-construction/lead-pipeline/.env << EOF
+      TEST_MODE=${PIPELINE_TEST_MODE:-false}
+      TEST_LIMIT=${PIPELINE_TEST_LIMIT:-5}
+      CITY=${PIPELINE_DEFAULT_CITY:-Addis Ababa}
+      KEYWORD=${PIPELINE_DEFAULT_KEYWORD:-Construction Company}
+      OUTPUT_DIR=${LEADS_OUTPUT_DIR:-/mnt/data/leads}
+      RESULTS_PER_QUERY=${PIPELINE_RESULTS_PER_QUERY:-50}
+      API_DELAY_SECONDS=${PIPELINE_API_DELAY:-2}
+      EOF
+    # ── Write leads-dashboard .env ─────────────────────────
+    - |
+      cat > /opt/ethiopia-construction/leads-dashboard/.env << EOF
+      LEADS_DIR=${LEADS_DIR:-/mnt/data/leads}
+      PORT=${LEADS_DASHBOARD_PORT:-5555}
+      EOF
 
     # ── Deploy main SaaS ──────────────────────────────────
     - echo "🏗️ Building main SaaS..."
