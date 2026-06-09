@@ -9,10 +9,10 @@ deploy:
   script:
     - echo "🚀 Deploying to production..."
 
-    # Copy source to deploy path
+    # ── Copy source to deploy path ────────────────────────
     - rsync -av --exclude='.git' --exclude='node_modules' $CI_PROJECT_DIR/ /opt/ethiopia-construction/
 
-    # Write fresh .env
+    # ── Write main SaaS .env ──────────────────────────────
     - |
       cat > /opt/ethiopia-construction/.env << EOF
       POSTGRES_DB=$POSTGRES_DB
@@ -28,16 +28,38 @@ deploy:
       MAIL_FROM_NAME=$MAIL_FROM_NAME
       EOF
 
-    # Deploy with cache (much faster)
+    # ── Write lead-pipeline .env ──────────────────────────
+    - |
+      cat > /opt/ethiopia-construction/lead-pipeline/.env << EOF
+      TEST_MODE=false
+      TEST_LIMIT=5
+      CITY=Addis Ababa
+      KEYWORD=Construction Company
+      EOF
+
+    # ── Deploy main SaaS ──────────────────────────────────
+    - echo "🏗️ Building main SaaS..."
     - cd /opt/ethiopia-construction
     - docker compose build
     - docker compose down
     - docker compose up -d
 
-    # Verify
-    - sleep 8
-    - docker compose ps
-    - curl -f http://localhost/health || echo "Health check pending..."
+    # ── Deploy leads dashboard ────────────────────────────
+    - echo "📊 Building leads dashboard..."
+    - cd /opt/ethiopia-construction/leads-dashboard
+    - docker compose build
+    - docker compose down
+    - docker compose up -d
+
+    # ── Verify all containers ─────────────────────────────
+    - sleep 10
+    - echo "🔍 Container status:"
+    - docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+    # ── Health checks ─────────────────────────────────────
+    - curl -f http://localhost/health || echo "⚠️ SaaS health check pending..."
+    - curl -f http://localhost:5555 || echo "⚠️ Dashboard health check pending..."
+
     - echo "✅ Deployment complete!"
 
   only:
