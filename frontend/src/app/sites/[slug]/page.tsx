@@ -84,65 +84,26 @@ export default function TenantPage({
   // ── Loading state ──────────────────────────────────────
   if (loading)
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          background: "#0a0a0a",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "column",
-          gap: "1rem",
-        }}
-      >
+      <div className="site-state">
         <div className="loader" />
-        <p
-          style={{
-            color: "#555",
-            fontFamily: "Barlow Condensed, sans-serif",
-            letterSpacing: "0.3em",
-            fontSize: "11px",
-            textTransform: "uppercase",
-          }}
-        >
-          Loading
-        </p>
+        <p className="site-state-kicker">Loading</p>
       </div>
     );
 
   // ── Not found state ────────────────────────────────────
   if (!tenant)
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          background: "#0a0a0a",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#fff",
-        }}
-      >
-        <div style={{ textAlign: "center" }}>
-          <p
-            style={{
-              fontFamily: "Cormorant Garamond, serif",
-              fontSize: "5rem",
-              fontWeight: 300,
-            }}
-          >
-            404
-          </p>
-          <p style={{ color: "#555", fontSize: "0.9rem", marginTop: "1rem" }}>
-            Company not found
-          </p>
+      <div className="site-state">
+        <div className="site-state-panel">
+          <p className="site-state-title">404</p>
+          <p className="site-state-copy">Company not found</p>
         </div>
       </div>
     );
 
   // ── Derived values ─────────────────────────────────────
-  const accent = validColor(tenant.accent_color, "#f4a61d");
-  const primary = validColor(tenant.primary_color, "#0a0a0a");
+  const accent = validColor(tenant.accent_color, "#d4af37");
+  const primary = validColor(tenant.primary_color, "#0d0e11");
   const contact = tenant.contacts?.[0];
   const services = tenant.services || [];
   const projects = tenant.projects || [];

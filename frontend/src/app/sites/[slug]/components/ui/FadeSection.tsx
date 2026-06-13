@@ -1,25 +1,33 @@
 "use client";
 
-import { useInView } from "../../hooks/useInView";
+import { motion } from "framer-motion";
+import { fadeUp } from "./Motion";
 
+/**
+ * Fusion scroll-reveal wrapper.
+ * Replaces the old IntersectionObserver approach with
+ * Framer Motion's `whileInView` for smooth, cascading entrances.
+ * Automatically respects `prefers-reduced-motion`.
+ */
 export function FadeSection({
   children,
   delay = 0,
+  className,
 }: {
   children: React.ReactNode;
   delay?: number;
+  className?: string;
 }) {
-  const { ref, inView } = useInView(0.1);
   return (
-    <div
-      ref={ref}
-      style={{
-        opacity: inView ? 1 : 0,
-        transform: inView ? "translateY(0)" : "translateY(30px)",
-        transition: `opacity 0.7s ease ${delay}ms, transform 0.7s ease ${delay}ms`,
-      }}
+    <motion.div
+      className={className}
+      variants={fadeUp}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ delay }}
     >
       {children}
-    </div>
+    </motion.div>
   );
 }

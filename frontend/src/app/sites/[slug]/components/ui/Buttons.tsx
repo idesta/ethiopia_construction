@@ -9,10 +9,11 @@ interface ButtonProps {
 export function PrimaryButton({
   onClick,
   children,
-  accent = "#f4a61d",
+  accent = "#d4af37",
 }: ButtonProps) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className="btn-primary"
       style={{ background: accent }}
@@ -25,10 +26,11 @@ export function PrimaryButton({
 export function OutlineButton({
   onClick,
   children,
-  accent = "#f4a61d",
+  accent = "#d4af37",
 }: ButtonProps) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className="btn-outline"
       style={{ "--accent": accent } as React.CSSProperties}

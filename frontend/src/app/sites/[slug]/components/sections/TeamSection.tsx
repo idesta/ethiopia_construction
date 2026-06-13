@@ -1,8 +1,11 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { TeamMember } from "../../types";
 import { FadeSection } from "../../components/ui/FadeSection";
 import { SectionHeader } from "../../components/ui/SectionHeader";
+import { staggerContainer, scaleIn } from "../ui/Motion";
+import { GeoRule } from "../ui/EthiopianGeometric";
 
 export function TeamSection({
   team,
@@ -23,23 +26,32 @@ export function TeamSection({
             highlight="Team"
             accent={accent}
           />
-          <div className="team-grid">
+          <GeoRule accent={accent} className="section-rule" />
+          <motion.div
+            className="team-grid"
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+          >
             {team.map((m) => (
-              <div className="team-card" key={m.id}>
-                {m.photo_url ? (
-                  <img src={m.photo_url} alt={m.name} className="team-photo" />
-                ) : (
-                  <div className="team-avatar" style={{ color: accent }}>
-                    {m.name.charAt(0)}
-                  </div>
-                )}
+              <motion.div className="team-card" key={m.id} variants={scaleIn}>
+                <div className="team-photo-wrap">
+                  {m.photo_url ? (
+                    <img src={m.photo_url} alt={m.name} className="team-photo" />
+                  ) : (
+                    <div className="team-avatar" style={{ color: accent }}>
+                      {m.name.charAt(0)}
+                    </div>
+                  )}
+                </div>
                 <div className="team-name display">{m.name}</div>
                 <div className="team-role" style={{ color: accent }}>
                   {m.role}
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
     </FadeSection>

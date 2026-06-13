@@ -22,6 +22,16 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // In production, nginx proxies /api/* to the backend.
+  // In development (npm run dev), we need Next.js rewrites to proxy API calls.
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "http://localhost:4000/api/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

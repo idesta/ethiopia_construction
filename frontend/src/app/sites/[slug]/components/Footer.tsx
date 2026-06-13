@@ -1,5 +1,10 @@
 "use client";
 
+import { motion } from "framer-motion";
+import { fadeUp } from "./ui/Motion";
+import { GeoRule } from "./ui/EthiopianGeometric";
+import { ArrowUpIcon } from "./ui/Icons";
+
 const NAV_LINKS = ["services", "projects", "team", "contact"];
 
 interface FooterProps {
@@ -12,8 +17,15 @@ export function Footer({ companyName, accent, onScrollTo }: FooterProps) {
   const shortName = companyName.split(" ")[0];
 
   return (
-    <footer className="footer">
-      <div className="footer-inner">
+    <motion.footer
+      className="footer"
+      variants={fadeUp}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-50px" }}
+    >
+      <GeoRule accent={accent} />
+      <div className="footer-inner" style={{ marginTop: "2rem" }}>
         <div>
           <div className="footer-logo">
             {shortName}
@@ -27,6 +39,7 @@ export function Footer({ companyName, accent, onScrollTo }: FooterProps) {
           <div className="footer-col-title">Navigation</div>
           {NAV_LINKS.map((link) => (
             <button
+              type="button"
               key={link}
               className="footer-link"
               onClick={() => onScrollTo(link)}
@@ -37,8 +50,12 @@ export function Footer({ companyName, accent, onScrollTo }: FooterProps) {
         </div>
         <div className="footer-links-col">
           <div className="footer-col-title">Quick</div>
-          <button className="footer-link" onClick={() => onScrollTo("home")}>
-            ↑ Back to top
+          <button
+            type="button"
+            className="footer-link footer-link-icon"
+            onClick={() => onScrollTo("home")}
+          >
+            <ArrowUpIcon /> Back to top
           </button>
         </div>
       </div>
@@ -50,6 +67,6 @@ export function Footer({ companyName, accent, onScrollTo }: FooterProps) {
           Addis Ababa, Ethiopia
         </span>
       </div>
-    </footer>
+    </motion.footer>
   );
 }

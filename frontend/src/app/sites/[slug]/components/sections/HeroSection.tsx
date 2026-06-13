@@ -1,6 +1,9 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Tenant } from "../../types";
+import { heroStagger, heroChild } from "../ui/Motion";
+import { HeritageMotif } from "../ui/EthiopianGeometric";
 
 interface HeroSectionProps {
   tenant: Tenant;
@@ -29,41 +32,62 @@ export function HeroSection({ tenant, accent, onScrollTo }: HeroSectionProps) {
       />
       {yearsActive && <div className="hero-number">{yearsActive}</div>}
 
-      <div className="hero-content">
+      <motion.div
+        className="hero-content"
+        variants={heroStagger}
+        initial="hidden"
+        animate="visible"
+      >
+        {/* Decorative motif */}
+        <HeritageMotif
+          accent={accent}
+          className="absolute -top-16 -left-16 opacity-40"
+        />
+
         {tenant.logo_url ? (
-          <div className="hero-brand">
+          <motion.div className="hero-brand" variants={heroChild}>
             <img
               src={tenant.logo_url}
               alt={`${tenant.name} logo`}
               className="hero-logo"
             />
-          </div>
+          </motion.div>
         ) : null}
-        <div className="hero-eyebrow" style={{ color: accent }}>
+
+        <motion.div className="hero-eyebrow" style={{ color: accent }} variants={heroChild}>
           <span className="hero-eyebrow-line" style={{ background: accent }} />
           {contact?.city || "Addis Ababa"}, Ethiopia
           {tenant.founded_year && ` · Est. ${tenant.founded_year}`}
-        </div>
-        <h1 className="hero-title display">
-          {firstName}&nbsp;<em style={{ color: accent }}>{lastName}</em>
-        </h1>
-        <p className="hero-tagline">
+        </motion.div>
+
+        <motion.h1 className="hero-title display" variants={heroChild}>
+          {firstName ? `${firstName} ` : ""}
+          <em style={{ color: accent }}>{lastName}</em>
+        </motion.h1>
+
+        <motion.p className="hero-tagline" variants={heroChild}>
           {tenant.tagline ||
             "Building the future of Ethiopia, one structure at a time."}
-        </p>
-        <div className="hero-actions">
+        </motion.p>
+
+        <motion.div className="hero-actions" variants={heroChild}>
           <button
+            type="button"
             className="btn-primary"
             onClick={() => onScrollTo("projects")}
             style={{ background: accent }}
           >
             View Our Work
           </button>
-          <button className="btn-outline" onClick={() => onScrollTo("contact")}>
+          <button
+            type="button"
+            className="btn-outline"
+            onClick={() => onScrollTo("contact")}
+          >
             Contact Us
           </button>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       <div className="hero-scroll">
         <span>Scroll</span>

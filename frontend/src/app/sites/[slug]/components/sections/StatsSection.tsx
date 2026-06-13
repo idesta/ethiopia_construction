@@ -1,8 +1,11 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { useInView } from "../../hooks/useInView";
 import { useCounter } from "../../hooks/useCounter";
 import { Tenant } from "../../types";
+import { staggerContainer, scaleIn } from "../ui/Motion";
+import { DiamondIcon } from "../ui/EthiopianGeometric";
 
 function StatItem({
   value,
@@ -19,13 +22,14 @@ function StatItem({
 }) {
   const count = useCounter(value, duration, start);
   return (
-    <div className="stat-item">
+    <motion.div className="stat-item" variants={scaleIn}>
+      <DiamondIcon accent="#0d0e11" size={12} />
       <div className="stat-number">
         {count}
         <span className="stat-suffix">{suffix}</span>
       </div>
       <div className="stat-label">{label}</div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -42,8 +46,18 @@ export function StatsSection({
     : 14;
 
   return (
-    <div ref={ref} className="stats-section" style={{ background: accent }}>
-      <div className="stats-grid">
+    <div
+      ref={ref}
+      className="stats-section"
+      style={{ background: accent }}
+    >
+      <motion.div
+        className="stats-grid"
+        variants={staggerContainer}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-50px" }}
+      >
         <StatItem
           value={yearsExp}
           suffix="+"
@@ -72,7 +86,7 @@ export function StatsSection({
           start={inView}
           duration={2400}
         />
-      </div>
+      </motion.div>
     </div>
   );
 }

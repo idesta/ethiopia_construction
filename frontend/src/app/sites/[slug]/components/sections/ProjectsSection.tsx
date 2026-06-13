@@ -1,8 +1,12 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Project } from "../../types";
 import { FadeSection } from "../../components/ui/FadeSection";
 import { SectionHeader } from "../../components/ui/SectionHeader";
+import { staggerContainer, scaleIn } from "../ui/Motion";
+import { BuildingIcon, MapPinIcon } from "../ui/Icons";
+import { GeoRule } from "../ui/EthiopianGeometric";
 
 export function ProjectsSection({
   projects,
@@ -21,18 +25,25 @@ export function ProjectsSection({
             highlight="Projects"
             accent={accent}
           />
+          <GeoRule accent={accent} className="section-rule" />
           {projects.length === 0 ? (
             <div className="projects-empty">
-              <span style={{ fontSize: "3rem" }}>🏛️</span>
+              <BuildingIcon size={48} />
               <p>
                 Portfolio projects will appear here once added from the admin
                 dashboard.
               </p>
             </div>
           ) : (
-            <div className="projects-grid">
+            <motion.div
+              className="projects-grid"
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+            >
               {projects.map((p) => (
-                <div className="project-card" key={p.id}>
+                <motion.div className="project-card" key={p.id} variants={scaleIn}>
                   {p.cover_url ? (
                     <img
                       src={p.cover_url}
@@ -40,7 +51,9 @@ export function ProjectsSection({
                       className="project-img"
                     />
                   ) : (
-                    <div className="project-placeholder">🏗️</div>
+                    <div className="project-placeholder">
+                      <BuildingIcon size={48} />
+                    </div>
                   )}
                   {p.status && (
                     <div
@@ -62,13 +75,14 @@ export function ProjectsSection({
                     <div className="project-title display">{p.title}</div>
                     {p.location && (
                       <div className="project-location">
-                        <span>📍</span> {p.location}
+                        <MapPinIcon size={14} />
+                        {p.location}
                       </div>
                     )}
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
         </div>
       </section>

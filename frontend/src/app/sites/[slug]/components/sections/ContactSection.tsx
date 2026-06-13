@@ -1,18 +1,37 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Contact, Service } from "../../types";
 import { FadeSection } from "../ui/FadeSection";
 import { SectionHeader } from "../ui/SectionHeader";
+import {
+  PhoneIcon,
+  MailIcon,
+  MapPinIcon,
+  ArrowRightIcon,
+  CheckIcon,
+  ExternalLinkIcon,
+} from "../ui/Icons";
+import { GeoRule } from "../ui/EthiopianGeometric";
+import { fadeLeft, fadeRight, scaleIn } from "../ui/Motion";
 
 interface ContactSectionProps {
   contact: Contact | undefined;
   services: Service[];
   accent: string;
-  slug: string; // ← add slug prop so we know which company
+  slug: string;
 }
 
 type FormState = "idle" | "sending" | "success" | "error";
+
+const fieldIds = {
+  name: "contact-name",
+  phone: "contact-phone",
+  email: "contact-email",
+  service: "contact-service",
+  message: "contact-message",
+};
 
 export function ContactSection({
   contact,
@@ -63,9 +82,13 @@ export function ContactSection({
       setSuccessMsg(data.message || "Your enquiry has been delivered.");
       setFormState("success");
       setForm({ name: "", phone: "", email: "", service: "", message: "" });
-    } catch (err: any) {
+    } catch (err: unknown) {
       setFormState("error");
-      setErrorMsg(err.message || "Something went wrong. Please try again.");
+      setErrorMsg(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again.",
+      );
     }
   }
 
@@ -80,34 +103,47 @@ export function ContactSection({
             accent={accent}
           />
 
-          <div className="contact-grid">
+          <GeoRule accent={accent} className="section-rule" />
+
+          <motion.div className="contact-grid">
             {/* ── Left: contact info ── */}
-            <div>
+            <motion.div
+              variants={fadeLeft}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-80px" }}
+            >
               {contact?.phone && (
-                <div className="contact-info-item">
-                  <div className="contact-icon">📞</div>
+                <motion.div className="contact-info-item" variants={scaleIn}>
+                  <div className="contact-icon">
+                    <PhoneIcon />
+                  </div>
                   <div>
                     <div className="contact-info-label">Phone</div>
                     <div className="contact-info-value">
                       <a href={`tel:${contact.phone}`}>{contact.phone}</a>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               )}
               {contact?.email && (
-                <div className="contact-info-item">
-                  <div className="contact-icon">✉️</div>
+                <motion.div className="contact-info-item" variants={scaleIn}>
+                  <div className="contact-icon">
+                    <MailIcon />
+                  </div>
                   <div>
                     <div className="contact-info-label">Email</div>
                     <div className="contact-info-value">
                       <a href={`mailto:${contact.email}`}>{contact.email}</a>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               )}
               {(contact?.address || contact?.city) && (
-                <div className="contact-info-item">
-                  <div className="contact-icon">📍</div>
+                <motion.div className="contact-info-item" variants={scaleIn}>
+                  <div className="contact-icon">
+                    <MapPinIcon />
+                  </div>
                   <div>
                     <div className="contact-info-label">Address</div>
                     <div className="contact-info-value">
@@ -118,97 +154,67 @@ export function ContactSection({
                           href={contact.maps_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={{
-                            color: accent,
-                            fontSize: "0.8rem",
-                            marginTop: "0.3rem",
-                            display: "inline-block",
-                          }}
+                          className="contact-map-link"
+                          style={{ color: accent }}
                         >
-                          View on Map →
+                          View on Map <ExternalLinkIcon />
                         </a>
                       )}
                     </div>
                   </div>
-                </div>
+                </motion.div>
               )}
-            </div>
+            </motion.div>
 
             {/* ── Right: form ── */}
-            <div>
-              {/* Success state */}
+            <motion.div
+              variants={fadeRight}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-80px" }}
+            >
               {formState === "success" ? (
-                <div
-                  style={{
-                    background: "#0d2818",
-                    border: "1px solid #4ade80",
-                    borderRadius: "10px",
-                    padding: "3rem 2rem",
-                    textAlign: "center",
-                  }}
+                <motion.div
+                  className="form-state form-state-success"
+                  role="status"
+                  aria-live="polite"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35 }}
                 >
-                  <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>
-                    ✅
+                  <div className="form-state-icon">
+                    <CheckIcon size={34} />
                   </div>
-                  <h3
-                    style={{
-                      color: "#4ade80",
-                      fontFamily: "Cormorant Garamond, serif",
-                      fontSize: "1.8rem",
-                      fontWeight: 300,
-                      marginBottom: "0.75rem",
-                    }}
-                  >
+                  <h3 className="form-state-title">
                     Message Sent!
                   </h3>
-                  <p
-                    style={{
-                      color: "#888",
-                      fontSize: "0.95rem",
-                      lineHeight: 1.6,
-                    }}
-                  >
+                  <p>
                     {successMsg ||
                       "Your enquiry has been delivered. The team will get back to you shortly."}
                   </p>
                   {successMsg.includes("not configured") && (
-                    <p
-                      style={{
-                        marginTop: "1rem",
-                        color: "#f5c94c",
-                        fontSize: "0.95rem",
-                        lineHeight: 1.6,
-                      }}
-                    >
-                      ⚠️ Note: email delivery is currently disabled for this
-                      site. Your message was accepted locally.
+                    <p className="form-state-note">
+                      Note: email delivery is currently disabled for this site.
                     </p>
                   )}
                   <button
+                    type="button"
+                    className="form-state-action"
                     onClick={() => setFormState("idle")}
-                    style={{
-                      marginTop: "1.5rem",
-                      background: accent,
-                      color: "#000",
-                      border: "none",
-                      padding: "0.75rem 2rem",
-                      cursor: "pointer",
-                      fontFamily: "Barlow Condensed, sans-serif",
-                      fontSize: "0.8rem",
-                      letterSpacing: "0.15em",
-                      textTransform: "uppercase",
-                      fontWeight: 600,
-                    }}
+                    style={{ background: accent }}
                   >
                     Send Another
                   </button>
-                </div>
+                </motion.div>
               ) : (
                 <form className="contact-form" onSubmit={handleSubmit}>
                   <div className="form-row">
                     <div className="form-group">
-                      <label className="form-label">Full Name *</label>
+                      <label className="form-label" htmlFor={fieldIds.name}>
+                        Full Name *
+                      </label>
                       <input
+                        id={fieldIds.name}
                         className="form-input"
                         placeholder="Abebe Girma"
                         value={form.name}
@@ -217,8 +223,11 @@ export function ContactSection({
                       />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Phone</label>
+                      <label className="form-label" htmlFor={fieldIds.phone}>
+                        Phone
+                      </label>
                       <input
+                        id={fieldIds.phone}
                         className="form-input"
                         placeholder="+251 91..."
                         type="tel"
@@ -229,8 +238,11 @@ export function ContactSection({
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label">Email</label>
+                    <label className="form-label" htmlFor={fieldIds.email}>
+                      Email
+                    </label>
                     <input
+                      id={fieldIds.email}
                       className="form-input"
                       placeholder="you@example.com"
                       type="email"
@@ -240,8 +252,11 @@ export function ContactSection({
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label">Project Type</label>
+                    <label className="form-label" htmlFor={fieldIds.service}>
+                      Project Type
+                    </label>
                     <select
+                      id={fieldIds.service}
                       className="form-input"
                       value={form.service}
                       onChange={set("service")}
@@ -261,8 +276,11 @@ export function ContactSection({
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label">Message *</label>
+                    <label className="form-label" htmlFor={fieldIds.message}>
+                      Message *
+                    </label>
                     <textarea
+                      id={fieldIds.message}
                       className="form-input"
                       placeholder="Describe your project..."
                       value={form.message}
@@ -271,19 +289,13 @@ export function ContactSection({
                     />
                   </div>
 
-                  {/* Error message */}
                   {formState === "error" && (
                     <div
-                      style={{
-                        background: "#2a0d0d",
-                        border: "1px solid #f87171",
-                        borderRadius: "6px",
-                        padding: "0.75rem 1rem",
-                        color: "#f87171",
-                        fontSize: "13px",
-                      }}
+                      className="form-state-error"
+                      role="alert"
+                      aria-live="assertive"
                     >
-                      ❌ {errorMsg}
+                      {errorMsg}
                     </div>
                   )}
 
@@ -293,12 +305,18 @@ export function ContactSection({
                     style={{ background: accent }}
                     disabled={formState === "sending"}
                   >
-                    {formState === "sending" ? "Sending..." : "Send Message →"}
+                    {formState === "sending" ? (
+                      "Sending..."
+                    ) : (
+                      <>
+                        Send Message <ArrowRightIcon />
+                      </>
+                    )}
                   </button>
                 </form>
               )}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
     </FadeSection>

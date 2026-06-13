@@ -79,8 +79,11 @@ deploy:
 
     - echo "✅ Deployment complete!"
 
-  only:
-    - main
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      when: on_success
+    - if: $CI_COMMIT_BRANCH == "feature/ethiopian-modern-refactor"
+      when: on_success
   environment:
     name: production
     url: http://196.188.249.162
