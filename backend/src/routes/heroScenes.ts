@@ -41,6 +41,7 @@ router.post(
         res.status(404).json({ message: "Tenant not found" });
         return;
       }
+      req.body = req.body || {};
       req.body.tenant = rows[0].slug;
       req.body.folder = "hero-scenes";
       next();
