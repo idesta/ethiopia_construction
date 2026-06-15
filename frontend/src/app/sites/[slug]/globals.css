@@ -784,7 +784,8 @@ section {
   max-width: 1280px;
   width: 100%;
   margin: 0 auto;
-  padding: 0 3rem;
+  /* Tight left edge — text starts close to viewport left */
+  padding: 0 3rem 0 2rem;
   display: grid;
   grid-template-columns: 5fr 7fr;
   align-items: center;
@@ -796,6 +797,8 @@ section {
 .hero-left {
   position: relative;
   z-index: 6;
+  /* Push text flush to left — no extra indent */
+  padding-left: 0;
 }
 
 /* Location badge */
@@ -880,6 +883,7 @@ section {
   align-items: center;
   justify-content: center;
   min-height: 600px;
+  /* overflow MUST be visible so scatter goes full-viewport */
   overflow: visible;
 }
 .hero-right-tilt {
@@ -897,6 +901,7 @@ section {
   position: relative;
   width: 420px;
   height: 420px;
+  /* overflow visible: scattered pieces escape into the full hero */
   overflow: visible;
 }
 .hscene-glow {

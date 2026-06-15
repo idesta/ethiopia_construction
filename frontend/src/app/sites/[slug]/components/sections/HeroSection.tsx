@@ -517,43 +517,53 @@ const SCATTER = Array.from({ length: N }, (_, i) => {
 });
 
 /* ═══════════════════════════════════════════════════════════════════
-   SCATTER PIECE — one SVG scene tile that flies in/out
+   SCATTER PIECE — renders in a full-viewport absolute overlay
+   so pieces can fly across the entire hero, not just the right column
    ═══════════════════════════════════════════════════════════════════ */
 interface PieceProps {
   sceneIdx: number;
   pieceIdx: number;
   accent:   string;
   phase:    "enter" | "exit";
+  /* centre of the assembled scene in viewport coords */
+  originX:  number;
+  originY:  number;
 }
 
-function ScatterPiece({ sceneIdx, pieceIdx, accent, phase }: PieceProps) {
+function ScatterPiece({ sceneIdx, pieceIdx, accent, phase, originX, originY }: PieceProps) {
   const { Component } = SCENES[sceneIdx];
   const s = SCATTER[pieceIdx];
-  const size = 80 + (pieceIdx % 4) * 18;  // varied sizes
+  const size = 80 + (pieceIdx % 4) * 18;
   const delay = pieceIdx * 0.06;
 
-  // Position around centre: distribute pieces in a loose cluster
-  const offsetX = (((pieceIdx * 137) % 360) / 360 - 0.5) * 280;
-  const offsetY = (((pieceIdx * 97)  % 360) / 360 - 0.5) * 200;
+  // Where this piece sits when assembled (loose cluster around origin)
+  const offsetX = (((pieceIdx * 137) % 360) / 360 - 0.5) * 260;
+  const offsetY = (((pieceIdx * 97)  % 360) / 360 - 0.5) * 180;
 
   const assembled = {
-    x: offsetX, y: offsetY,
+    x: originX + offsetX - size / 2,
+    y: originY + offsetY - size / 2,
     rotate: (pieceIdx % 2 === 0 ? 1 : -1) * (pieceIdx % 3) * 4,
-    scale: 0.55 + (pieceIdx % 4) * 0.12,
-    opacity: 0.55 + (pieceIdx % 3) * 0.15,
-    filter: "blur(0px)",
+    scale:   0.5 + (pieceIdx % 4) * 0.1,
+    opacity: 0.5 + (pieceIdx % 3) * 0.15,
+    filter:  "blur(0px)",
   };
+
+  // Scattered = origin + full-viewport scatter vector
+  const scatteredX = originX + s.x - size / 2;
+  const scatteredY = originY + s.y - size / 2;
 
   if (phase === "exit") {
     return (
       <motion.div
-        style={{ position: "absolute", width: size, height: size,
-          top: "50%", left: "50%",
-          marginLeft: -size / 2, marginTop: -size / 2,
-          pointerEvents: "none",
+        style={{
+          position: "fixed", top: 0, left: 0,
+          width: size, height: size,
+          pointerEvents: "none", zIndex: 8,
         }}
         initial={assembled}
-        animate={{ x: s.x, y: s.y, rotate: s.rot, scale: 0.2, opacity: 0, filter: "blur(8px)" }}
+        animate={{ x: scatteredX, y: scatteredY,
+          rotate: s.rot, scale: 0.18, opacity: 0, filter: "blur(8px)" }}
         transition={{
           duration: 0.55, delay,
           ease: [0.4, 0, 0.9, 0.05] as [number,number,number,number],
@@ -566,24 +576,23 @@ function ScatterPiece({ sceneIdx, pieceIdx, accent, phase }: PieceProps) {
 
   return (
     <motion.div
-      style={{ position: "absolute", width: size, height: size,
-        top: "50%", left: "50%",
-        marginLeft: -size / 2, marginTop: -size / 2,
-        pointerEvents: "none",
+      style={{
+        position: "fixed", top: 0, left: 0,
+        width: size, height: size,
+        pointerEvents: "none", zIndex: 8,
       }}
-      initial={{ x: s.x * 1.4, y: s.y * 1.4, rotate: s.rot * 1.6,
-        scale: 0.15, opacity: 0, filter: "blur(12px)" }}
+      initial={{ x: scatteredX * 1.35, y: scatteredY * 1.35,
+        rotate: s.rot * 1.5, scale: 0.12, opacity: 0, filter: "blur(12px)" }}
       animate={assembled}
       transition={{
-        x:       { type: "spring", stiffness: 200, damping: 20, delay },
-        y:       { type: "spring", stiffness: 200, damping: 20, delay },
-        rotate:  { type: "spring", stiffness: 160, damping: 12, delay },
+        x:       { type: "spring", stiffness: 180, damping: 20, delay },
+        y:       { type: "spring", stiffness: 180, damping: 20, delay },
+        rotate:  { type: "spring", stiffness: 150, damping: 12, delay },
         scale:   { type: "spring", stiffness: 260, damping: 14, delay },
         opacity: { duration: 0.4, delay },
         filter:  { duration: 0.5, delay },
       }}
     >
-      {/* Idle float after assembly */}
       <motion.div
         style={{ width: "100%", height: "100%" }}
         animate={{ y: [0, -(6 + pieceIdx % 5), 0] }}
@@ -608,6 +617,25 @@ function SceneDisplay({ accent, shouldReduce }: SceneDisplayProps) {
   const [current, setCurrent] = useState(0);
   const [nextIdx, setNextIdx] = useState(1);
   const [phase,   setPhase]   = useState<"enter" | "exit">("enter");
+  const stageRef = useRef<HTMLDivElement>(null);
+  const [origin, setOrigin] = useState({ x: 0, y: 0 });
+
+  // Measure the centre of the stage in viewport coords so scatter
+  // pieces can use position:fixed and truly cross the full screen
+  useEffect(() => {
+    const measure = () => {
+      if (!stageRef.current) return;
+      const r = stageRef.current.getBoundingClientRect();
+      setOrigin({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    window.addEventListener("scroll", measure, { passive: true });
+    return () => {
+      window.removeEventListener("resize", measure);
+      window.removeEventListener("scroll", measure);
+    };
+  }, []);
 
   const EXIT_MS  = N * 60 + 580;
   const ENTER_MS = N * 60 + 980;
@@ -626,30 +654,30 @@ function SceneDisplay({ accent, shouldReduce }: SceneDisplayProps) {
 
   useEffect(() => {
     if (shouldReduce || phase !== "enter") return;
-    // after enter completes, wait HOLD_MS then advance
     const t = setTimeout(() => goTo((current + 1) % SCENES.length), ENTER_MS + HOLD_MS);
     return () => clearTimeout(t);
   }, [shouldReduce, phase, current, goTo, ENTER_MS]);
 
   const { Component } = SCENES[current];
-
-  // Scatter pieces: all 10 scenes rendered as small orbiting pieces
   const pieces = Array.from({ length: N }, (_, i) => i);
 
   return (
-    <div className="hscene-stage">
+    <div className="hscene-stage" ref={stageRef}>
       {/* Glow */}
       <div className="hscene-glow"
         style={{ background: `radial-gradient(ellipse 70% 60% at 50% 50%, ${accent}20, transparent 68%)` }} />
 
-      {/* Scattered small scenes — orbit around centre */}
-      {pieces.map(i => (
+      {/* Scatter pieces — position:fixed, use measured viewport origin
+          so they explode across the entire hero section */}
+      {origin.x > 0 && pieces.map(i => (
         <ScatterPiece
           key={`${current}-${i}`}
           sceneIdx={(current + i) % SCENES.length}
           pieceIdx={i}
           accent={accent}
           phase={phase}
+          originX={origin.x}
+          originY={origin.y}
         />
       ))}
 
