@@ -49,3 +49,5 @@ leads-dashboard/.env
 
 # Large archive files
 *.tar.gz
+
+*.deb
