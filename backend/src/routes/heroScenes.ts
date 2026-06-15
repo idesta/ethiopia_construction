@@ -30,10 +30,23 @@ router.get("/:tenantId", requireAuth, async (req: Request, res: Response) => {
 router.post(
   "/:tenantId",
   requireAuth,
-  (req, res, next) => {
-    // Inject tenant and folder so the multer middleware saves to the right path
-    req.body.folder = "hero-scenes";
-    next();
+  async (req: Request, res: Response, next) => {
+    // Inject tenant (slug) and folder so the multer middleware saves to the right path
+    try {
+      const { rows } = await db.query(
+        "SELECT slug FROM tenants WHERE id = $1",
+        [req.params.tenantId],
+      );
+      if (!rows[0]) {
+        res.status(404).json({ message: "Tenant not found" });
+        return;
+      }
+      req.body.tenant = rows[0].slug;
+      req.body.folder = "hero-scenes";
+      next();
+    } catch (err) {
+      next(err);
+    }
   },
   async (req: Request, res: Response, next) => {
     // Enforce max scenes limit before accepting the file
