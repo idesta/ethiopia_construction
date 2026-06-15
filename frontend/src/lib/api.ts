@@ -154,6 +154,7 @@ export interface TenantFull extends Tenant {
   projects: Project[];
   team: TeamMember[];
   services: Service[];
+  hero_scenes: HeroScene[];
 }
 
 export interface Contact {

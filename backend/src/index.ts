@@ -11,6 +11,7 @@ import teamRoutes from "./routes/team";
 import serviceRoutes from "./routes/services";
 import uploadRoutes from "./routes/upload";
 import contactRoute from "./routes/contact";
+import heroScenesRoutes from "./routes/heroScenes";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -52,6 +53,7 @@ app.use("/api/projects", projectRoutes);
 app.use("/api/team", teamRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/hero-scenes", heroScenesRoutes);
 
 // ── Health check ──────────────────────────
 app.get("/health", (_req, res) => {

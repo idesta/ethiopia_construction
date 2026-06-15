@@ -781,15 +781,15 @@ section {
 .hero-split {
   position: relative;
   z-index: 5;
-  max-width: 1280px;
+  max-width: 1440px;
   width: 100%;
   margin: 0 auto;
-  /* Tight left edge — text starts close to viewport left */
-  padding: 0 3rem 0 2rem;
+  /* Text flush to left edge — right 3D gets maximum space */
+  padding: 0 3rem 0 0;
   display: grid;
-  grid-template-columns: 5fr 7fr;
+  grid-template-columns: 3fr 9fr;
   align-items: center;
-  gap: 2rem;
+  gap: 0rem;
   min-height: calc(100vh - 12rem);
 }
 
@@ -799,6 +799,7 @@ section {
   z-index: 6;
   /* Push text flush to left — no extra indent */
   padding-left: 0;
+  padding-right: 1rem;
 }
 
 /* Location badge */
@@ -882,14 +883,14 @@ section {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 600px;
+  min-height: 650px;
   /* overflow MUST be visible so scatter goes full-viewport */
   overflow: visible;
 }
 .hero-right-tilt {
   position: relative;
   width: 100%;
-  min-height: 600px;
+  min-height: 650px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -899,8 +900,8 @@ section {
 /* ── Scene stage ── */
 .hscene-stage {
   position: relative;
-  width: 420px;
-  height: 420px;
+  width: 520px;
+  height: 520px;
   /* overflow visible: scattered pieces escape into the full hero */
   overflow: visible;
 }
@@ -914,10 +915,10 @@ section {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 400px;
-  height: 400px;
-  margin-left: -200px;
-  margin-top: -200px;
+  width: 480px;
+  height: 480px;
+  margin-left: -240px;
+  margin-top: -240px;
   z-index: 5;
   filter: drop-shadow(0 20px 50px rgba(0,0,0,0.65));
 }

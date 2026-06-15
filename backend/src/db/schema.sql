@@ -89,6 +89,17 @@ CREATE TABLE IF NOT EXISTS media_assets (
   uploaded_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ── Hero Scenes (per-tenant animated scene uploads) ──────────────
+CREATE TABLE IF NOT EXISTS hero_scenes (
+  id          UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
+  tenant_id   UUID        NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  url         TEXT        NOT NULL,   -- /uploads/{slug}/hero-scenes/{filename}
+  file_path   TEXT        NOT NULL,   -- relative path on disk
+  label       TEXT,                   -- optional display label
+  sort_order  INT         DEFAULT 0,
+  created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ── Indexes ───────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_tenants_slug       ON tenants(slug);
 CREATE INDEX IF NOT EXISTS idx_contacts_tenant    ON contacts(tenant_id);
@@ -96,6 +107,7 @@ CREATE INDEX IF NOT EXISTS idx_projects_tenant    ON projects(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_team_tenant        ON team(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_services_tenant    ON services(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_media_tenant       ON media_assets(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_hero_scenes_tenant ON hero_scenes(tenant_id);
 
 -- ── Seed: 2 test companies ────────────────
 INSERT INTO tenants (slug, name, tagline, primary_color, accent_color, founded_year)

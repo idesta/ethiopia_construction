@@ -31,6 +31,16 @@ export interface Service {
   icon: string;
 }
 
+export interface HeroScene {
+  id: string;
+  tenant_id: string;
+  url: string;
+  file_path: string;
+  label: string | null;
+  sort_order: number;
+  created_at: string;
+}
+
 export interface Tenant {
   id: string;
   slug: string;
@@ -44,4 +54,5 @@ export interface Tenant {
   projects: Project[];
   team: TeamMember[];
   services: Service[];
+  hero_scenes: HeroScene[];
 }

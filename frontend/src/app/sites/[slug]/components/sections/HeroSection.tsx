@@ -505,13 +505,13 @@ const SCENES: { label: string; Component: React.FC<{ a: string }> }[] = [
 
 const N = SCENES.length; // 10 pieces to scatter
 
-/* Scatter destinations — spread wide across the hero */
+/* Scatter destinations — spread wide across the entire hero */
 const SCATTER = Array.from({ length: N }, (_, i) => {
   const angle = (i / N) * 2 * Math.PI - Math.PI / 2;
-  const radius = 420 + i * 28;
+  const radius = 520 + i * 35;
   return {
     x:   Math.cos(angle) * radius,
-    y:   Math.sin(angle) * radius * 0.65,
+    y:   Math.sin(angle) * radius * 0.55,
     rot: (i % 2 === 0 ? 1 : -1) * (28 + i * 9),
   };
 });
@@ -537,8 +537,8 @@ function ScatterPiece({ sceneIdx, pieceIdx, accent, phase, originX, originY }: P
   const delay = pieceIdx * 0.06;
 
   // Where this piece sits when assembled (loose cluster around origin)
-  const offsetX = (((pieceIdx * 137) % 360) / 360 - 0.5) * 260;
-  const offsetY = (((pieceIdx * 97)  % 360) / 360 - 0.5) * 180;
+  const offsetX = (((pieceIdx * 137) % 360) / 360 - 0.5) * 320;
+  const offsetY = (((pieceIdx * 97)  % 360) / 360 - 0.5) * 240;
 
   const assembled = {
     x: originX + offsetX - size / 2,
@@ -639,7 +639,7 @@ function SceneDisplay({ accent, shouldReduce }: SceneDisplayProps) {
 
   const EXIT_MS  = N * 60 + 580;
   const ENTER_MS = N * 60 + 980;
-  const HOLD_MS  = 4500;
+  const HOLD_MS  = 3000;
 
   const goTo = useCallback((idx: number) => {
     setNextIdx(idx);

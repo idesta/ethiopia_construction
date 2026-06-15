@@ -58,3 +58,13 @@ export interface Toast {
   message: string;
   type: "success" | "error" | "info";
 }
+
+export interface HeroScene {
+  id: string;
+  tenant_id: string;
+  url: string;
+  file_path: string;
+  label: string | null;
+  sort_order: number;
+  created_at: string;
+}
