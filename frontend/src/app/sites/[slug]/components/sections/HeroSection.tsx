@@ -7,12 +7,12 @@ import {
   useReducedMotion,
   useSpring,
   useMotionValue,
+  useMotionTemplate,
   animate,
 } from "framer-motion";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Tenant } from "../../types";
 import { heroStagger, heroChild } from "../ui/Motion";
-import { HeritageMotif } from "../ui/EthiopianGeometric";
 
 interface HeroSectionProps {
   tenant: Tenant;
@@ -20,369 +20,303 @@ interface HeroSectionProps {
   onScrollTo: (id: string) => void;
 }
 
-/* ─── 3-D Isometric Building SVG ──────────────────────── */
-function IsoBuilding({
-  accent,
-  size = 120,
-}: {
-  accent: string;
-  size?: number;
-}) {
-  return (
-    <svg
-      width={size}
-      height={size * 1.2}
-      viewBox="0 0 100 120"
-      fill="none"
-      aria-hidden="true"
-    >
-      {/* Left face */}
-      <polygon
-        points="50,10 10,34 10,95 50,71"
-        fill="#1c1f27"
-        stroke={accent}
-        strokeWidth="0.8"
-        opacity="0.9"
-      />
-      {/* Right face */}
-      <polygon
-        points="50,10 90,34 90,95 50,71"
-        fill="#14161b"
-        stroke={accent}
-        strokeWidth="0.8"
-        opacity="0.9"
-      />
-      {/* Top face */}
-      <polygon
-        points="50,10 90,34 50,58 10,34"
-        fill="#242830"
-        stroke={accent}
-        strokeWidth="0.8"
-      />
-      {/* Windows left */}
-      {[42, 55, 68].map((y) => (
-        <rect
-          key={y}
-          x="18"
-          y={y}
-          width="8"
-          height="6"
-          fill={accent}
-          opacity="0.35"
-          rx="0.5"
-        />
-      ))}
-      {[42, 55, 68].map((y) => (
-        <rect
-          key={y + 100}
-          x="30"
-          y={y}
-          width="8"
-          height="6"
-          fill={accent}
-          opacity="0.2"
-          rx="0.5"
-        />
-      ))}
-      {/* Windows right */}
-      {[42, 55, 68].map((y) => (
-        <rect
-          key={y + 200}
-          x="58"
-          y={y}
-          width="8"
-          height="6"
-          fill={accent}
-          opacity="0.25"
-          rx="0.5"
-        />
-      ))}
-      {[42, 55, 68].map((y) => (
-        <rect
-          key={y + 300}
-          x="72"
-          y={y}
-          width="8"
-          height="6"
-          fill={accent}
-          opacity="0.15"
-          rx="0.5"
-        />
-      ))}
-      {/* Accent edge */}
-      <line
-        x1="50"
-        y1="10"
-        x2="50"
-        y2="71"
-        stroke={accent}
-        strokeWidth="1.2"
-        opacity="0.6"
-      />
-    </svg>
-  );
-}
-
-/* ─── Tower Crane SVG ──────────────────────────────────── */
-function TowerCrane({ accent, size = 100 }: { accent: string; size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size * 1.5}
-      viewBox="0 0 80 120"
-      fill="none"
-      aria-hidden="true"
-    >
-      {/* Mast */}
-      <rect x="37" y="30" width="6" height="80" fill="#1c1f27" stroke={accent} strokeWidth="0.8" />
-      {/* Cross lattice on mast */}
-      <line x1="37" y1="40" x2="43" y2="50" stroke={accent} strokeWidth="0.5" opacity="0.5" />
-      <line x1="43" y1="40" x2="37" y2="50" stroke={accent} strokeWidth="0.5" opacity="0.5" />
-      <line x1="37" y1="55" x2="43" y2="65" stroke={accent} strokeWidth="0.5" opacity="0.5" />
-      <line x1="43" y1="55" x2="37" y2="65" stroke={accent} strokeWidth="0.5" opacity="0.5" />
-      <line x1="37" y1="70" x2="43" y2="80" stroke={accent} strokeWidth="0.5" opacity="0.5" />
-      <line x1="43" y1="70" x2="37" y2="80" stroke={accent} strokeWidth="0.5" opacity="0.5" />
-      {/* Jib (long arm) */}
-      <rect x="10" y="26" width="60" height="5" fill={accent} opacity="0.8" rx="1" />
-      {/* Counter jib */}
-      <rect x="10" y="26" width="22" height="4" fill={accent} opacity="0.5" rx="1" />
-      {/* Trolley */}
-      <rect x="52" y="31" width="8" height="5" fill="#242830" stroke={accent} strokeWidth="0.7" />
-      {/* Hook cable */}
-      <line x1="56" y1="36" x2="56" y2="50" stroke={accent} strokeWidth="0.8" opacity="0.7" />
-      {/* Hook */}
-      <path d="M53 50 Q56 56 59 50" stroke={accent} strokeWidth="1" fill="none" />
-      {/* Counterweight */}
-      <rect x="12" y="30" width="12" height="8" fill="#1c1f27" stroke={accent} strokeWidth="0.7" rx="1" />
-      {/* Base */}
-      <rect x="32" y="108" width="16" height="6" fill={accent} opacity="0.6" rx="1" />
-      {/* Cap */}
-      <polygon points="40,18 48,30 32,30" fill={accent} opacity="0.9" />
-    </svg>
-  );
-}
-
-/* ─── Excavator / Digger SVG ───────────────────────────── */
-function Excavator({ accent, size = 100 }: { accent: string; size?: number }) {
-  return (
-    <svg
-      width={size * 1.4}
-      height={size}
-      viewBox="0 0 140 100"
-      fill="none"
-      aria-hidden="true"
-    >
-      {/* Tracks */}
-      <rect x="5" y="72" width="80" height="16" rx="8" fill="#1c1f27" stroke={accent} strokeWidth="0.8" />
-      <circle cx="15" cy="80" r="7" fill="#242830" stroke={accent} strokeWidth="0.8" />
-      <circle cx="35" cy="80" r="7" fill="#242830" stroke={accent} strokeWidth="0.8" />
-      <circle cx="55" cy="80" r="7" fill="#242830" stroke={accent} strokeWidth="0.8" />
-      <circle cx="75" cy="80" r="7" fill="#242830" stroke={accent} strokeWidth="0.8" />
-      {/* Body */}
-      <rect x="10" y="45" width="70" height="30" rx="3" fill="#14161b" stroke={accent} strokeWidth="0.8" />
-      {/* Cab */}
-      <rect x="20" y="30" width="40" height="20" rx="3" fill="#1c1f27" stroke={accent} strokeWidth="0.8" />
-      {/* Cab window */}
-      <rect x="26" y="34" width="20" height="12" rx="2" fill={accent} opacity="0.2" />
-      {/* Boom arm */}
-      <rect
-        x="70"
-        y="35"
-        width="45"
-        height="8"
-        rx="3"
-        fill={accent}
-        opacity="0.75"
-        transform="rotate(-20 70 35)"
-      />
-      {/* Stick */}
-      <rect
-        x="98"
-        y="22"
-        width="32"
-        height="6"
-        rx="2"
-        fill={accent}
-        opacity="0.6"
-        transform="rotate(15 98 22)"
-      />
-      {/* Bucket */}
-      <path
-        d="M120 38 L134 32 L138 42 L122 50 Z"
-        fill="#1c1f27"
-        stroke={accent}
-        strokeWidth="0.8"
-      />
-      {/* Bucket teeth */}
-      <line x1="124" y1="49" x2="122" y2="55" stroke={accent} strokeWidth="1" />
-      <line x1="130" y1="47" x2="130" y2="53" stroke={accent} strokeWidth="1" />
-      <line x1="136" y1="44" x2="136" y2="50" stroke={accent} strokeWidth="1" />
-      {/* Accent stripe */}
-      <rect x="10" y="58" width="70" height="3" fill={accent} opacity="0.4" />
-    </svg>
-  );
-}
-
-/* ─── Hard Hat SVG ─────────────────────────────────────── */
-function HardHat({ accent, size = 60 }: { accent: string; size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size * 0.75}
-      viewBox="0 0 80 60"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M8 42 Q8 18 40 14 Q72 18 72 42 Z"
-        fill={accent}
-        opacity="0.85"
-      />
-      <rect x="4" y="40" width="72" height="8" rx="4" fill={accent} opacity="0.6" />
-      <rect x="35" y="14" width="10" height="16" rx="2" fill="rgba(255,255,255,0.15)" />
-      {/* Stripe */}
-      <path
-        d="M20 24 Q40 18 60 24"
-        stroke="rgba(255,255,255,0.3)"
-        strokeWidth="2.5"
-        fill="none"
-      />
-    </svg>
-  );
-}
-
-/* ─── Blueprint Roll SVG ───────────────────────────────── */
-function Blueprint({ accent, size = 70 }: { accent: string; size?: number }) {
-  return (
-    <svg
-      width={size * 1.3}
-      height={size}
-      viewBox="0 0 90 70"
-      fill="none"
-      aria-hidden="true"
-    >
-      {/* Roll body */}
-      <rect x="10" y="10" width="70" height="50" rx="3" fill="#14161b" stroke={accent} strokeWidth="0.8" />
-      {/* Blueprint grid lines */}
-      {[20, 30, 40, 50, 60].map((x) => (
-        <line key={x} x1={x} y1="10" x2={x} y2="60" stroke={accent} strokeWidth="0.4" opacity="0.3" />
-      ))}
-      {[20, 30, 40, 50].map((y) => (
-        <line key={y} x1="10" y1={y} x2="80" y2={y} stroke={accent} strokeWidth="0.4" opacity="0.3" />
-      ))}
-      {/* Floor plan lines */}
-      <rect x="18" y="18" width="24" height="18" stroke={accent} strokeWidth="1" fill="none" opacity="0.7" />
-      <rect x="48" y="18" width="22" height="12" stroke={accent} strokeWidth="1" fill="none" opacity="0.7" />
-      <line x1="18" y1="36" x2="70" y2="36" stroke={accent} strokeWidth="0.8" opacity="0.5" />
-      <rect x="18" y="42" width="52" height="10" stroke={accent} strokeWidth="0.8" fill="none" opacity="0.5" />
-      {/* Roll ends */}
-      <ellipse cx="10" cy="35" rx="4" ry="25" fill="#1c1f27" stroke={accent} strokeWidth="0.8" />
-      <ellipse cx="80" cy="35" rx="4" ry="25" fill="#1c1f27" stroke={accent} strokeWidth="0.8" />
-    </svg>
-  );
-}
-
-/* ─── Tall skyscraper ──────────────────────────────────── */
-function Skyscraper({ accent, size = 90 }: { accent: string; size?: number }) {
-  return (
-    <svg
-      width={size * 0.6}
-      height={size}
-      viewBox="0 0 60 100"
-      fill="none"
-      aria-hidden="true"
-    >
-      {/* Main tower */}
-      <rect x="15" y="10" width="30" height="85" fill="#14161b" stroke={accent} strokeWidth="0.8" />
-      {/* Spire */}
-      <polygon points="30,2 35,12 25,12" fill={accent} opacity="0.9" />
-      {/* Window grid */}
-      {[18, 28, 38, 48, 58, 68, 78].map((y) =>
-        [19, 27, 35].map((x) => (
-          <rect
-            key={`${x}-${y}`}
-            x={x}
-            y={y}
-            width="5"
-            height="6"
-            fill={accent}
-            opacity={Math.random() > 0.4 ? 0.5 : 0.1}
-            rx="0.3"
-          />
-        ))
-      )}
-      {/* Setbacks */}
-      <rect x="10" y="65" width="40" height="5" fill="#1c1f27" stroke={accent} strokeWidth="0.5" />
-      <rect x="5" y="80" width="50" height="5" fill="#1c1f27" stroke={accent} strokeWidth="0.5" />
-    </svg>
-  );
-}
-
-/* ─── Floating 3D element wrapper ──────────────────────── */
-interface FloatProps {
-  children: React.ReactNode;
-  delay?: number;
-  amplitude?: number;
-  duration?: number;
-  style?: React.CSSProperties;
-  className?: string;
-}
-
-function FloatingElement({
-  children,
-  delay = 0,
-  amplitude = 12,
-  duration = 4,
-  style,
-  className,
-}: FloatProps) {
-  const shouldReduce = useReducedMotion();
-  return (
-    <motion.div
-      style={style}
-      className={className}
-      animate={
-        shouldReduce
-          ? {}
-          : {
-              y: [0, -amplitude, 0],
-              rotate: [0, 1.5, -1, 0],
-            }
-      }
-      transition={{
-        duration,
-        repeat: Infinity,
-        ease: "easeInOut",
-        delay,
-        times: [0, 0.45, 1],
-      }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
 /* ─── Animated counter ─────────────────────────────────── */
 function AnimatedNumber({ value, suffix = "" }: { value: number; suffix?: string }) {
   const motionVal = useMotionValue(0);
   const ref = useRef<HTMLSpanElement>(null);
-
   useEffect(() => {
-    const ctrl = animate(motionVal, value, {
-      duration: 2.2,
-      ease: "easeOut",
-      delay: 0.8,
-    });
+    const ctrl = animate(motionVal, value, { duration: 2.4, ease: "easeOut", delay: 0.9 });
     const unsub = motionVal.on("change", (v) => {
       if (ref.current) ref.current.textContent = Math.round(v) + suffix;
     });
-    return () => {
-      ctrl.stop();
-      unsub();
-    };
+    return () => { ctrl.stop(); unsub(); };
   }, [value, suffix, motionVal]);
-
   return <span ref={ref}>0{suffix}</span>;
+}
+
+/* ─── Isometric Building cluster (the hero 3D object) ──── */
+function IsometricScene({ accent }: { accent: string }) {
+  const a = accent;
+  const dark1 = "#0d0e11";
+  const dark2 = "#14161b";
+  const dark3 = "#1c1f27";
+  const mid = "#242830";
+
+  return (
+    <svg viewBox="0 0 520 560" fill="none" aria-hidden="true" className="hero-iso-svg">
+      {/* ── Drop shadow blur ── */}
+      <defs>
+        <filter id="iso-shadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="12" stdDeviation="18" floodColor={a} floodOpacity="0.22" />
+        </filter>
+        <filter id="iso-glow" x="-30%" y="-30%" width="160%" height="160%">
+          <feDropShadow dx="0" dy="0" stdDeviation="10" floodColor={a} floodOpacity="0.5" />
+        </filter>
+        <radialGradient id="scene-glow" cx="50%" cy="60%" r="50%">
+          <stop offset="0%" stopColor={a} stopOpacity="0.15" />
+          <stop offset="100%" stopColor={a} stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="glass-sheen" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="white" stopOpacity="0.08" />
+          <stop offset="100%" stopColor="white" stopOpacity="0.02" />
+        </linearGradient>
+      </defs>
+
+      {/* Glow backdrop */}
+      <ellipse cx="260" cy="400" rx="200" ry="80" fill="url(#scene-glow)" />
+
+      {/* ── Far-back tower (left) ── */}
+      <g opacity="0.5" filter="url(#iso-shadow)">
+        <polygon points="110,120 60,150 60,340 110,310" fill={dark2} stroke={a} strokeWidth="0.6" />
+        <polygon points="110,120 160,150 160,340 110,310" fill={dark1} stroke={a} strokeWidth="0.6" />
+        <polygon points="110,120 160,150 110,180 60,150" fill={mid} stroke={a} strokeWidth="0.6" />
+        {[170,200,230,260,290].map(y=>(
+          <g key={y}>
+            <rect x="68" y={y} width="12" height="9" rx="1" fill={a} opacity="0.3" />
+            <rect x="85" y={y} width="12" height="9" rx="1" fill={a} opacity="0.2" />
+          </g>
+        ))}
+      </g>
+
+      {/* ── Far-back tower (right) ── */}
+      <g opacity="0.45" filter="url(#iso-shadow)">
+        <polygon points="400,100 350,130 350,300 400,270" fill={dark2} stroke={a} strokeWidth="0.6" />
+        <polygon points="400,100 450,130 450,300 400,270" fill={dark1} stroke={a} strokeWidth="0.6" />
+        <polygon points="400,100 450,130 400,160 350,130" fill={mid} stroke={a} strokeWidth="0.6" />
+        {[160,190,220,250].map(y=>(
+          <g key={y}>
+            <rect x="358" y={y} width="10" height="8" rx="1" fill={a} opacity="0.25" />
+            <rect x="374" y={y} width="10" height="8" rx="1" fill={a} opacity="0.15" />
+          </g>
+        ))}
+      </g>
+
+      {/* ── Main center tower (tall) ── */}
+      <g filter="url(#iso-shadow)">
+        {/* Left face */}
+        <polygon points="260,40 160,100 160,360 260,300" fill={dark3} stroke={a} strokeWidth="0.9" />
+        {/* Right face */}
+        <polygon points="260,40 360,100 360,360 260,300" fill={dark2} stroke={a} strokeWidth="0.9" />
+        {/* Top face */}
+        <polygon points="260,40 360,100 260,160 160,100" fill={mid} stroke={a} strokeWidth="0.9" />
+        {/* Glass sheen on top */}
+        <polygon points="260,40 360,100 260,160 160,100" fill="url(#glass-sheen)" />
+
+        {/* Window grid — left face */}
+        {[175,200,225,250,275,300,325].map(y=>(
+          <g key={y}>
+            <rect x="172" y={y} width="14" height="11" rx="1" fill={a} opacity="0.45" />
+            <rect x="192" y={y} width="14" height="11" rx="1" fill={a} opacity="0.3" />
+            <rect x="212" y={y} width="14" height="11" rx="1" fill={a} opacity="0.2" />
+            <rect x="232" y={y} width="14" height="11" rx="1" fill={a} opacity="0.15" />
+          </g>
+        ))}
+        {/* Window grid — right face */}
+        {[175,200,225,250,275,300,325].map(y=>(
+          <g key={y}>
+            <rect x="272" y={y} width="14" height="11" rx="1" fill={a} opacity="0.25" />
+            <rect x="292" y={y} width="14" height="11" rx="1" fill={a} opacity="0.18" />
+            <rect x="312" y={y} width="14" height="11" rx="1" fill={a} opacity="0.12" />
+            <rect x="332" y={y} width="14" height="11" rx="1" fill={a} opacity="0.08" />
+          </g>
+        ))}
+
+        {/* Vertical accent spine */}
+        <line x1="260" y1="40" x2="260" y2="300" stroke={a} strokeWidth="1.5" opacity="0.7" filter="url(#iso-glow)" />
+
+        {/* Antenna */}
+        <line x1="260" y1="40" x2="260" y2="8" stroke={a} strokeWidth="1.2" opacity="0.9" />
+        <circle cx="260" cy="8" r="3.5" fill={a} opacity="0.9" filter="url(#iso-glow)" />
+      </g>
+
+      {/* ── Right side lower building ── */}
+      <g opacity="0.75" filter="url(#iso-shadow)">
+        <polygon points="370,240 310,275 310,420 370,385" fill={dark3} stroke={a} strokeWidth="0.8" />
+        <polygon points="370,240 430,275 430,420 370,385" fill={dark2} stroke={a} strokeWidth="0.8" />
+        <polygon points="370,240 430,275 370,310 310,275" fill={mid} stroke={a} strokeWidth="0.8" />
+        {[300,325,350,370].map(y=>(
+          <g key={y}>
+            <rect x="318" y={y} width="10" height="8" rx="1" fill={a} opacity="0.35" />
+            <rect x="334" y={y} width="10" height="8" rx="1" fill={a} opacity="0.2" />
+          </g>
+        ))}
+      </g>
+
+      {/* ── Left side lower building ── */}
+      <g opacity="0.7" filter="url(#iso-shadow)">
+        <polygon points="150,250 90,285 90,420 150,385" fill={dark3} stroke={a} strokeWidth="0.8" />
+        <polygon points="150,250 210,285 210,420 150,385" fill={dark2} stroke={a} strokeWidth="0.8" />
+        <polygon points="150,250 210,285 150,320 90,285" fill={mid} stroke={a} strokeWidth="0.8" />
+        {[310,335,360,385].map(y=>(
+          <g key={y}>
+            <rect x="98" y={y} width="10" height="8" rx="1" fill={a} opacity="0.3" />
+            <rect x="114" y={y} width="10" height="8" rx="1" fill={a} opacity="0.18" />
+          </g>
+        ))}
+      </g>
+
+      {/* ── Ground / platform ── */}
+      <polygon points="260,420 80,510 260,560 440,510" fill={dark1} stroke={a} strokeWidth="0.5" opacity="0.6" />
+      <polygon points="260,420 440,510 440,520 260,430" fill="#0a0b0d" stroke={a} strokeWidth="0.4" opacity="0.4" />
+      <polygon points="260,420 80,510 80,520 260,430" fill="#0d0e0f" stroke={a} strokeWidth="0.4" opacity="0.4" />
+
+      {/* Ground grid lines */}
+      {[-3,-2,-1,0,1,2,3].map(i=>(
+        <line key={i}
+          x1={260 + i*50} y1={420 + Math.abs(i)*12}
+          x2={260} y2={560}
+          stroke={a} strokeWidth="0.4" opacity="0.15"
+        />
+      ))}
+
+      {/* ── Tower crane ── */}
+      <g opacity="0.85">
+        {/* Mast */}
+        <rect x="354" y="100" width="8" height="145" fill={dark3} stroke={a} strokeWidth="0.7" />
+        {/* Lattice */}
+        {[110,128,146,164,182,200,218].map(y=>(
+          <g key={y}>
+            <line x1="354" y1={y} x2="362" y2={y+9} stroke={a} strokeWidth="0.4" opacity="0.5" />
+            <line x1="362" y1={y} x2="354" y2={y+9} stroke={a} strokeWidth="0.4" opacity="0.5" />
+          </g>
+        ))}
+        {/* Jib */}
+        <rect x="310" y="96" width="85" height="6" rx="2" fill={a} opacity="0.8" />
+        {/* Counter-jib */}
+        <rect x="310" y="96" width="32" height="5" rx="1" fill={a} opacity="0.5" />
+        {/* Counterweight */}
+        <rect x="312" y="101" width="20" height="12" rx="2" fill={dark3} stroke={a} strokeWidth="0.7" />
+        {/* Hook cable */}
+        <line x1="375" y1="102" x2="375" y2="128" stroke={a} strokeWidth="0.9" opacity="0.7" />
+        {/* Hook */}
+        <path d="M372 128 Q375 136 378 128" stroke={a} strokeWidth="1.2" fill="none" />
+        {/* Cap */}
+        <polygon points="358,90 368,100 348,100" fill={a} opacity="0.9" />
+      </g>
+
+      {/* ── Excavator (bottom left area) ── */}
+      <g opacity="0.8" transform="translate(60,390) scale(0.7)">
+        <rect x="5" y="55" width="90" height="18" rx="9" fill={dark3} stroke={a} strokeWidth="0.9" />
+        <circle cx="14" cy="64" r="7" fill={mid} stroke={a} strokeWidth="0.8" />
+        <circle cx="34" cy="64" r="7" fill={mid} stroke={a} strokeWidth="0.8" />
+        <circle cx="54" cy="64" r="7" fill={mid} stroke={a} strokeWidth="0.8" />
+        <circle cx="74" cy="64" r="7" fill={mid} stroke={a} strokeWidth="0.8" />
+        <rect x="10" y="30" width="72" height="28" rx="3" fill={dark2} stroke={a} strokeWidth="0.8" />
+        <rect x="18" y="18" width="38" height="16" rx="2" fill={dark3} stroke={a} strokeWidth="0.7" />
+        <rect x="22" y="20" width="18" height="10" rx="1" fill={a} opacity="0.18" />
+        <rect x="82" y="28" width="50" height="7" rx="2" fill={a} opacity="0.7" transform="rotate(-18 82 28)" />
+        <rect x="118" y="16" width="34" height="5" rx="2" fill={a} opacity="0.55" transform="rotate(12 118 16)" />
+        <path d="M142 28 L158 22 L162 32 L146 40 Z" fill={dark3} stroke={a} strokeWidth="0.8" />
+        <line x1="146" y1="39" x2="144" y2="45" stroke={a} strokeWidth="1" />
+        <line x1="152" y1="37" x2="152" y2="43" stroke={a} strokeWidth="1" />
+        <line x1="158" y1="34" x2="158" y2="40" stroke={a} strokeWidth="1" />
+      </g>
+
+      {/* ── Floating accent diamonds ── */}
+      <g filter="url(#iso-glow)">
+        <rect x="80" y="60" width="14" height="14" rx="1.5" transform="rotate(45 87 67)" stroke={a} strokeWidth="1" fill="none" opacity="0.7" />
+        <rect x="430" y="200" width="10" height="10" rx="1" transform="rotate(45 435 205)" stroke={a} strokeWidth="1" fill={a} fillOpacity="0.2" opacity="0.8" />
+        <rect x="150" y="440" width="8" height="8" rx="1" transform="rotate(45 154 444)" stroke={a} strokeWidth="0.8" fill="none" opacity="0.55" />
+        <rect x="390" y="440" width="12" height="12" rx="1" transform="rotate(45 396 446)" stroke={a} strokeWidth="1" fill={a} fillOpacity="0.15" opacity="0.7" />
+      </g>
+
+      {/* ── Floating hard hat ── */}
+      <g opacity="0.9" transform="translate(62,200)">
+        <path d="M4 34 Q4 12 36 8 Q68 12 68 34 Z" fill={a} opacity="0.8" />
+        <rect x="0" y="32" width="72" height="8" rx="4" fill={a} opacity="0.55" />
+        <rect x="31" y="8" width="10" height="14" rx="2" fill="rgba(255,255,255,0.12)" />
+        <path d="M14 20 Q36 14 58 20" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" fill="none" />
+      </g>
+
+      {/* ── Blueprint scroll ── */}
+      <g opacity="0.75" transform="translate(400,300) rotate(-15)">
+        <rect x="0" y="0" width="70" height="48" rx="2" fill={dark2} stroke={a} strokeWidth="0.7" />
+        {[12,22,32,42,52].map(x=>(
+          <line key={x} x1={x} y1="0" x2={x} y2="48" stroke={a} strokeWidth="0.3" opacity="0.3" />
+        ))}
+        {[12,24,36].map(y=>(
+          <line key={y} x1="0" y1={y} x2="70" y2={y} stroke={a} strokeWidth="0.3" opacity="0.3" />
+        ))}
+        <rect x="6" y="6" width="22" height="16" stroke={a} strokeWidth="0.8" fill="none" opacity="0.6" />
+        <rect x="34" y="6" width="28" height="10" stroke={a} strokeWidth="0.8" fill="none" opacity="0.6" />
+        <ellipse cx="0" cy="24" rx="3" ry="22" fill={dark3} stroke={a} strokeWidth="0.6" />
+        <ellipse cx="70" cy="24" rx="3" ry="22" fill={dark3} stroke={a} strokeWidth="0.6" />
+      </g>
+    </svg>
+  );
+}
+
+/* ─── Orbit ring with icons ────────────────────────────── */
+function OrbitRing({ accent, shouldReduce }: { accent: string; shouldReduce: boolean | null }) {
+  const icons = [
+    // Hard hat
+    { angle: 0, label: "Safety",
+      icon: <path d="M4 18 Q4 6 20 4 Q36 6 36 18 Z" fill={accent} opacity="0.9" /> },
+    // Crane hook
+    { angle: 90, label: "Lifting",
+      icon: <path d="M18 4 L18 18 Q18 28 28 28 Q38 28 38 18 L36 18 Q36 26 28 26 Q20 26 20 18 L20 4 Z" stroke={accent} strokeWidth="2" fill="none" /> },
+    // Ruler
+    { angle: 180, label: "Precision",
+      icon: <><rect x="2" y="14" width="36" height="12" rx="2" stroke={accent} strokeWidth="1.5" fill="none" />{[8,14,20,26,32].map(x=><line key={x} x1={x} y1="14" x2={x} y2={x===14||x===26?20:17} stroke={accent} strokeWidth="1.2" />)}</> },
+    // Bolt/gear
+    { angle: 270, label: "Build",
+      icon: <><circle cx="20" cy="20" r="8" stroke={accent} strokeWidth="1.5" fill="none" /><circle cx="20" cy="20" r="3" fill={accent} opacity="0.7" />{[0,45,90,135,180,225,270,315].map(a=><rect key={a} x="19" y="10" width="2" height="4" rx="1" fill={accent} transform={`rotate(${a} 20 20)`} />)}</> },
+  ];
+
+  return (
+    <div className="hero-orbit" aria-hidden="true">
+      <motion.div
+        className="hero-orbit-ring"
+        animate={shouldReduce ? {} : { rotate: 360 }}
+        transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+        style={{ borderColor: `${accent}30` }}
+      >
+        {icons.map(({ angle, label, icon }) => (
+          <div
+            key={label}
+            className="hero-orbit-item"
+            style={{
+              transform: `rotate(${angle}deg) translateX(140px) rotate(-${angle}deg)`,
+            }}
+          >
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-label={label}>
+              {icon}
+            </svg>
+          </div>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
+
+/* ─── Floating particles ───────────────────────────────── */
+function Particles({ accent }: { accent: string }) {
+  const pts = [
+    { x: "12%", y: "18%", s: 3, d: 3.2 }, { x: "88%", y: "12%", s: 2, d: 4.1 },
+    { x: "22%", y: "72%", s: 4, d: 2.8 }, { x: "78%", y: "68%", s: 2.5, d: 5 },
+    { x: "50%", y: "8%",  s: 2, d: 3.5 }, { x: "5%",  y: "45%", s: 3, d: 4.5 },
+    { x: "94%", y: "50%", s: 2, d: 3.8 }, { x: "65%", y: "88%", s: 3, d: 2.6 },
+    { x: "35%", y: "90%", s: 2, d: 4.8 }, { x: "18%", y: "38%", s: 1.5, d: 6 },
+  ];
+  return (
+    <div className="hero-particles" aria-hidden="true">
+      {pts.map((p, i) => (
+        <motion.div
+          key={i}
+          className="hero-particle"
+          style={{
+            left: p.x,
+            top: p.y,
+            width: p.s,
+            height: p.s,
+            background: accent,
+          }}
+          animate={{ y: [0, -20, 0], opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: p.d, repeat: Infinity, ease: "easeInOut", delay: i * 0.3 }}
+        />
+      ))}
+    </div>
+  );
 }
 
 /* ─── Main HeroSection ─────────────────────────────────── */
@@ -390,252 +324,214 @@ export function HeroSection({ tenant, accent, onScrollTo }: HeroSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const shouldReduce = useReducedMotion();
 
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end start"],
-  });
+  // Mouse tracking for interactive tilt
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [8, -8]), { stiffness: 120, damping: 30 });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-10, 10]), { stiffness: 120, damping: 30 });
 
-  // Parallax layers — different depths
-  const yLayer1 = useTransform(scrollYProgress, [0, 1], ["0%", "-18%"]);
-  const yLayer2 = useTransform(scrollYProgress, [0, 1], ["0%", "-32%"]);
-  const yLayer3 = useTransform(scrollYProgress, [0, 1], ["0%", "-50%"]);
-  const yLayer4 = useTransform(scrollYProgress, [0, 1], ["0%", "-65%"]);
-  const scaleHero = useTransform(scrollYProgress, [0, 0.6], [1, 0.92]);
-  const opacityHero = useTransform(scrollYProgress, [0, 0.55], [1, 0]);
+  // Scroll parallax
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
+  const sceneY      = useTransform(scrollYProgress, [0, 1], ["0%", "-22%"]);
+  const sceneScale  = useTransform(scrollYProgress, [0, 0.7], [1, 0.88]);
+  const sceneOpacity= useTransform(scrollYProgress, [0, 0.65], [1, 0]);
+  const contentY    = useTransform(scrollYProgress, [0, 1], ["0%", "-14%"]);
+  const contentOp   = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
-  // Spring-smooth the parallax
-  const sLayer1 = useSpring(yLayer1, { stiffness: 80, damping: 20 });
-  const sLayer2 = useSpring(yLayer2, { stiffness: 60, damping: 18 });
-  const sLayer3 = useSpring(yLayer3, { stiffness: 50, damping: 16 });
-  const sLayer4 = useSpring(yLayer4, { stiffness: 40, damping: 14 });
+  const springY     = useSpring(sceneY,  { stiffness: 60, damping: 20 });
 
-  const contact = tenant.contacts?.[0];
-  const words = tenant.name.split(" ");
-  const lastName = words.slice(-1)[0];
-  const firstName = words.slice(0, -1).join(" ");
-  const yearsActive = tenant.founded_year
-    ? new Date().getFullYear() - tenant.founded_year
-    : null;
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    if (shouldReduce) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseX.set((e.clientX - rect.left) / rect.width - 0.5);
+    mouseY.set((e.clientY - rect.top)  / rect.height - 0.5);
+  };
+  const handleMouseLeave = () => { mouseX.set(0); mouseY.set(0); };
 
-  const parallaxY1 = shouldReduce ? undefined : sLayer1;
-  const parallaxY2 = shouldReduce ? undefined : sLayer2;
-  const parallaxY3 = shouldReduce ? undefined : sLayer3;
-  const parallaxY4 = shouldReduce ? undefined : sLayer4;
+  const contact    = tenant.contacts?.[0];
+  const words      = tenant.name.split(" ");
+  const lastName   = words.slice(-1)[0];
+  const firstName  = words.slice(0, -1).join(" ");
+  const yearsActive = tenant.founded_year ? new Date().getFullYear() - tenant.founded_year : null;
+
+  // Gradient mesh from accent color
+  const r = parseInt(accent.slice(1, 3), 16);
+  const g = parseInt(accent.slice(3, 5), 16);
+  const b = parseInt(accent.slice(5, 7), 16);
 
   return (
-    <section id="home" className="hero hero-3d" ref={sectionRef}>
-      {/* ── Dark cinematic base ── */}
-      <div className="hero-bg" />
+    <section
+      id="home"
+      className="hero hero-split"
+      ref={sectionRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* ── Gradient mesh background ── */}
+      <div className="hero-mesh" style={{
+        background: `
+          radial-gradient(ellipse 80% 60% at 70% 40%, rgba(${r},${g},${b},0.18) 0%, transparent 65%),
+          radial-gradient(ellipse 60% 50% at 20% 60%, rgba(111,139,171,0.14) 0%, transparent 60%),
+          radial-gradient(ellipse 50% 70% at 85% 80%, rgba(${r},${g},${b},0.08) 0%, transparent 55%),
+          linear-gradient(165deg, #0d0e11 0%, #10121a 50%, #0d0e11 100%)
+        `
+      }} />
+
+      {/* Subtle noise grain */}
+      <div className="hero-grain" />
+
+      {/* Blueprint grid overlay */}
       <div className="hero-grid" />
 
-      {/* ── Depth accent lines ── */}
-      <div
-        className="hero-accent-line"
-        style={{
-          background: `linear-gradient(to bottom, transparent, ${accent}44, transparent)`,
-        }}
-      />
-      <div
-        className="hero-accent-line hero-accent-line--right"
-        style={{
-          background: `linear-gradient(to bottom, transparent, ${accent}22, transparent)`,
-        }}
-      />
+      {/* Particles */}
+      <Particles accent={accent} />
 
-      {/* ── Ground plane grid (perspective) ── */}
-      <div className="hero-ground-plane" />
+      {/* ── Split layout ── */}
+      <div className="hero-split-inner">
 
-      {/* ── Deepest layer: distant skyscrapers ── */}
-      <motion.div
-        className="hero-3d-layer hero-3d-layer--bg"
-        style={{ y: parallaxY4 }}
-      >
-        <FloatingElement delay={0} amplitude={6} duration={6} className="h3d-iso h3d-iso--far-left">
-          <Skyscraper accent={accent} size={70} />
-        </FloatingElement>
-        <FloatingElement delay={1.5} amplitude={5} duration={7} className="h3d-iso h3d-iso--far-right">
-          <Skyscraper accent={accent} size={55} />
-        </FloatingElement>
-        <FloatingElement delay={0.8} amplitude={4} duration={8} className="h3d-iso h3d-iso--far-center">
-          <IsoBuilding accent={accent} size={60} />
-        </FloatingElement>
-      </motion.div>
-
-      {/* ── Mid-back layer: mid-rise buildings ── */}
-      <motion.div
-        className="hero-3d-layer hero-3d-layer--mid"
-        style={{ y: parallaxY3 }}
-      >
-        <FloatingElement delay={0.3} amplitude={10} duration={5} className="h3d-iso h3d-iso--mid-left">
-          <IsoBuilding accent={accent} size={95} />
-        </FloatingElement>
-        <FloatingElement delay={1.2} amplitude={8} duration={5.5} className="h3d-iso h3d-iso--mid-right">
-          <IsoBuilding accent={accent} size={80} />
-        </FloatingElement>
-        <FloatingElement delay={2} amplitude={7} duration={6} className="h3d-iso h3d-iso--mid-center">
-          <Skyscraper accent={accent} size={85} />
-        </FloatingElement>
-      </motion.div>
-
-      {/* ── Mid-front layer: machinery + tools ── */}
-      <motion.div
-        className="hero-3d-layer hero-3d-layer--front"
-        style={{ y: parallaxY2 }}
-      >
-        <FloatingElement delay={0.6} amplitude={14} duration={4.5} className="h3d-iso h3d-iso--crane">
-          <TowerCrane accent={accent} size={90} />
-        </FloatingElement>
-        <FloatingElement delay={1.8} amplitude={10} duration={5} className="h3d-iso h3d-iso--excavator">
-          <Excavator accent={accent} size={80} />
-        </FloatingElement>
-        <FloatingElement delay={0.2} amplitude={12} duration={4.8} className="h3d-iso h3d-iso--blueprint">
-          <Blueprint accent={accent} size={65} />
-        </FloatingElement>
-      </motion.div>
-
-      {/* ── Nearest layer: hard hat ── */}
-      <motion.div
-        className="hero-3d-layer hero-3d-layer--near"
-        style={{ y: parallaxY1 }}
-      >
-        <FloatingElement delay={1} amplitude={16} duration={3.8} className="h3d-iso h3d-iso--hardhat">
-          <HardHat accent={accent} size={65} />
-        </FloatingElement>
-        {/* Floating accent diamonds */}
+        {/* LEFT: Text content */}
         <motion.div
-          className="h3d-iso h3d-iso--diamond1"
-          animate={shouldReduce ? {} : { rotate: 360 }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="hero-content hero-content--left"
+          variants={heroStagger}
+          initial="hidden"
+          animate="visible"
+          style={{
+            y: shouldReduce ? 0 : contentY,
+            opacity: shouldReduce ? 1 : contentOp,
+          }}
         >
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-            <rect x="14" y="1" width="18" height="18" rx="2" transform="rotate(45 14 1)" stroke={accent} strokeWidth="1.2" opacity="0.7" />
-          </svg>
+          {/* Badge */}
+          <motion.div className="hero-badge" variants={heroChild}>
+            <span className="hero-badge-dot" style={{ background: accent }} />
+            <span style={{ color: accent }}>
+              {contact?.city || "Addis Ababa"} · Ethiopia
+            </span>
+            {tenant.founded_year && (
+              <span className="hero-badge-year">Est. {tenant.founded_year}</span>
+            )}
+          </motion.div>
+
+          {/* Logo */}
+          {tenant.logo_url && (
+            <motion.div className="hero-brand" variants={heroChild}>
+              <img src={tenant.logo_url} alt={`${tenant.name} logo`} className="hero-logo" />
+            </motion.div>
+          )}
+
+          {/* Heading */}
+          <motion.h1 className="hero-title display" variants={heroChild}>
+            {firstName && (
+              <span className="hero-title-first">{firstName}</span>
+            )}
+            <em className="hero-title-last" style={{ color: accent }}>{lastName}</em>
+          </motion.h1>
+
+          {/* Tagline */}
+          <motion.p className="hero-tagline" variants={heroChild}>
+            {tenant.tagline || "Building the future of Ethiopia, one structure at a time."}
+          </motion.p>
+
+          {/* Stats row */}
+          {yearsActive && (
+            <motion.div className="hero-stats-row" variants={heroChild}>
+              <div className="hero-stat">
+                <span className="hero-stat-num" style={{ color: accent }}>
+                  <AnimatedNumber value={yearsActive} suffix="+" />
+                </span>
+                <span className="hero-stat-label">Years</span>
+              </div>
+              <div className="hero-stat-divider" style={{ background: accent }} />
+              <div className="hero-stat">
+                <span className="hero-stat-num" style={{ color: accent }}>
+                  <AnimatedNumber value={tenant.projects?.length ?? 0} suffix="+" />
+                </span>
+                <span className="hero-stat-label">Projects</span>
+              </div>
+              <div className="hero-stat-divider" style={{ background: accent }} />
+              <div className="hero-stat">
+                <span className="hero-stat-num" style={{ color: accent }}>
+                  <AnimatedNumber value={tenant.team?.length ?? 0} suffix="+" />
+                </span>
+                <span className="hero-stat-label">Experts</span>
+              </div>
+            </motion.div>
+          )}
+
+          {/* CTAs */}
+          <motion.div className="hero-actions" variants={heroChild}>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => onScrollTo("projects")}
+              style={{ background: accent }}
+            >
+              View Our Work
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              className="btn-outline"
+              onClick={() => onScrollTo("contact")}
+            >
+              Get a Quote
+            </button>
+          </motion.div>
         </motion.div>
+
+        {/* RIGHT: 3D scene */}
         <motion.div
-          className="h3d-iso h3d-iso--diamond2"
-          animate={shouldReduce ? {} : { rotate: -360 }}
-          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+          className="hero-scene-wrap"
+          style={{
+            y:       shouldReduce ? 0 : springY,
+            scale:   shouldReduce ? 1 : sceneScale,
+            opacity: shouldReduce ? 1 : sceneOpacity,
+          }}
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <rect x="8" y="0.5" width="10" height="10" rx="1" transform="rotate(45 8 0.5)" stroke={accent} strokeWidth="1" fill={accent} fillOpacity="0.12" />
-          </svg>
-        </motion.div>
-        <motion.div
-          className="h3d-iso h3d-iso--diamond3"
-          animate={shouldReduce ? {} : { rotate: 360 }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear", delay: 2 }}
-        >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <rect x="10" y="1" width="13" height="13" rx="1.5" transform="rotate(45 10 1)" stroke={accent} strokeWidth="1" opacity="0.5" />
-          </svg>
-        </motion.div>
-      </motion.div>
+          {/* Orbit ring */}
+          <OrbitRing accent={accent} shouldReduce={shouldReduce} />
 
-      {/* ── Gold ambient glow ── */}
-      <div
-        className="hero-glow"
-        style={{
-          background: `radial-gradient(ellipse 55% 35% at 70% 55%, ${accent}18, transparent 70%)`,
-        }}
-      />
+          {/* Depth rings */}
+          <div className="hero-depth-ring hero-depth-ring--1" style={{ borderColor: `${accent}18` }} />
+          <div className="hero-depth-ring hero-depth-ring--2" style={{ borderColor: `${accent}10` }} />
+          <div className="hero-depth-ring hero-depth-ring--3" style={{ borderColor: `${accent}08` }} />
 
-      {/* ── Hero content ── */}
-      <motion.div
-        className="hero-content"
-        variants={heroStagger}
-        initial="hidden"
-        animate="visible"
-        style={{ scale: shouldReduce ? 1 : scaleHero, opacity: shouldReduce ? 1 : opacityHero }}
-      >
-        <HeritageMotif
-          accent={accent}
-          className="absolute -top-16 -left-16 opacity-40"
-        />
-
-        {tenant.logo_url ? (
-          <motion.div className="hero-brand" variants={heroChild}>
-            <img
-              src={tenant.logo_url}
-              alt={`${tenant.name} logo`}
-              className="hero-logo"
+          {/* 3D tilt container */}
+          <motion.div
+            className="hero-iso-wrap"
+            style={{
+              rotateX: shouldReduce ? 0 : rotateX,
+              rotateY: shouldReduce ? 0 : rotateY,
+              transformStyle: "preserve-3d",
+            }}
+          >
+            {/* Glow halo */}
+            <div
+              className="hero-iso-glow"
+              style={{
+                background: `radial-gradient(ellipse 70% 55% at 50% 55%, ${accent}28, transparent 70%)`
+              }}
             />
+
+            {/* The isometric scene */}
+            <motion.div
+              animate={shouldReduce ? {} : {
+                y:      [0, -14, 0],
+                rotate: [0, 0.8, -0.5, 0],
+              }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", times: [0, 0.45, 0.75, 1] }}
+            >
+              <IsometricScene accent={accent} />
+            </motion.div>
           </motion.div>
-        ) : null}
-
-        <motion.div
-          className="hero-eyebrow"
-          style={{ color: accent }}
-          variants={heroChild}
-        >
-          <span className="hero-eyebrow-line" style={{ background: accent }} />
-          {contact?.city || "Addis Ababa"}, Ethiopia
-          {tenant.founded_year && ` · Est. ${tenant.founded_year}`}
         </motion.div>
+      </div>
 
-        <motion.h1 className="hero-title display" variants={heroChild}>
-          {firstName ? `${firstName} ` : ""}
-          <em style={{ color: accent }}>{lastName}</em>
-        </motion.h1>
-
-        <motion.p className="hero-tagline" variants={heroChild}>
-          {tenant.tagline ||
-            "Building the future of Ethiopia, one structure at a time."}
-        </motion.p>
-
-        {/* Inline mini stats */}
-        {yearsActive && (
-          <motion.div className="hero-stats-row" variants={heroChild}>
-            <div className="hero-stat">
-              <span className="hero-stat-num" style={{ color: accent }}>
-                <AnimatedNumber value={yearsActive} suffix="+" />
-              </span>
-              <span className="hero-stat-label">Years Active</span>
-            </div>
-            <div className="hero-stat-divider" style={{ background: accent }} />
-            <div className="hero-stat">
-              <span className="hero-stat-num" style={{ color: accent }}>
-                <AnimatedNumber value={tenant.projects?.length ?? 0} suffix="+" />
-              </span>
-              <span className="hero-stat-label">Projects</span>
-            </div>
-            <div className="hero-stat-divider" style={{ background: accent }} />
-            <div className="hero-stat">
-              <span className="hero-stat-num" style={{ color: accent }}>
-                <AnimatedNumber value={tenant.team?.length ?? 0} suffix="+" />
-              </span>
-              <span className="hero-stat-label">Team Members</span>
-            </div>
-          </motion.div>
-        )}
-
-        <motion.div className="hero-actions" variants={heroChild}>
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={() => onScrollTo("projects")}
-            style={{ background: accent }}
-          >
-            View Our Work
-          </button>
-          <button
-            type="button"
-            className="btn-outline"
-            onClick={() => onScrollTo("contact")}
-          >
-            Contact Us
-          </button>
-        </motion.div>
-      </motion.div>
-
-      {/* ── Scroll indicator ── */}
+      {/* Scroll indicator */}
       <div className="hero-scroll">
         <span>Scroll</span>
-        <div
-          className="scroll-line"
-          style={{
-            background: `linear-gradient(to bottom, ${accent}, transparent)`,
-          }}
-        />
+        <div className="scroll-line" style={{ background: `linear-gradient(to bottom, ${accent}, transparent)` }} />
       </div>
     </section>
   );
