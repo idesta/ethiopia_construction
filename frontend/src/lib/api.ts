@@ -134,6 +134,17 @@ export async function uploadFile(
   return res.json();
 }
 
+// ── Hero Scenes ───────────────────────────
+
+export const heroScenes = {
+  list: (tenantId: string) => get<HeroScene[]>(`/api/hero-scenes/${tenantId}`),
+
+  create: (tenantId: string, data: Partial<HeroScene>) =>
+    post<HeroScene>(`/api/tenants/${tenantId}/hero-scenes`, data),
+
+  remove: (id: string) => del(`/api/hero-scenes/${id}`),
+};
+
 // ── Types ─────────────────────────────────
 
 export interface Tenant {
@@ -147,6 +158,13 @@ export interface Tenant {
   founded_year: number;
   is_active: boolean;
   created_at: string;
+}
+
+export interface HeroScene {
+  id: string;
+  tenant_id: string;
+  url: string;
+  sort_order: number;
 }
 
 export interface TenantFull extends Tenant {
