@@ -139,14 +139,18 @@ export async function uploadFile(
 export const heroScenes = {
   list: (tenantId: string) => get<HeroScene[]>(`/api/hero-scenes/${tenantId}`),
 
-  upload: async (tenantId: string, file: File) => {
+  upload: async (tenantId: string, file: File, tenantSlug: string) => {
     const formData = new FormData();
     formData.append("file", file);
-    const res = await fetch(`${BASE}/api/hero-scenes/${tenantId}`, {
-      method: "POST",
-      credentials: "include",
-      body: formData,
-    });
+    // Send slug as query param (multer reads req.query.tenant)
+    const res = await fetch(
+      `${BASE}/api/hero-scenes/${tenantId}?tenant=${encodeURIComponent(tenantSlug)}`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      },
+    );
     if (!res.ok) {
       const err = await res.json().catch(() => ({ message: res.statusText }));
       throw new Error(err.message || "Upload failed");

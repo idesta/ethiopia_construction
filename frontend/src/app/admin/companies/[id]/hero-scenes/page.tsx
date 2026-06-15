@@ -62,7 +62,7 @@ export default function HeroScenesPage() {
 
     setUploading(true);
     try {
-      const created = await heroScenesApi.upload(tenantId, file);
+      const created = await heroScenesApi.upload(tenantId, file, tenant?.slug || "");
       setScenes((prev) => [...prev, created]);
       showToast("Scene uploaded!", "success");
     } catch (err: any) {
