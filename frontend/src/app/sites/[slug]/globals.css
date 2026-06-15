@@ -721,12 +721,13 @@ section {
 }
 
 /* ══════════════════════════════════════════════════════════
-   HERO V3  —  Full-section mosaic backdrop + left text panel
+   HERO V3  —  Split: text left / animated SVG scenes right
    ══════════════════════════════════════════════════════════ */
 .hero-v3 {
   min-height: 100vh;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
   padding: 7rem 0 5rem;
   position: relative;
   overflow: hidden;
@@ -762,108 +763,39 @@ section {
   pointer-events: none;
 }
 
-/* ── Mosaic stage — full section, overflow visible so tiles scatter anywhere ── */
-.hero-mosaic-stage {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* overflow MUST be visible — tiles scatter outside this box */
-  overflow: visible;
-  pointer-events: none;
-}
+/* ── Mosaic stage — replaced by split layout ── */
+.hero-mosaic-stage { display: none; }
+.hero-mosaic-center { display: none; }
+.hero-mosaic-glow { display: none; }
+.htile-stage { display: none; }
+.htile { display: none; }
+.htile-dots { display: none; }
+.htile-dot { display: none; }
+.htile-bar { display: none; }
+.htile-label { display: none; }
 
-/* Tilt/perspective wrapper around assembled mosaic */
-.hero-mosaic-center {
+/* ── Left text panel — replaced by hero-left ── */
+.hero-text-panel { display: none; }
+
+/* ── Two-column split ── */
+.hero-split {
   position: relative;
-  perspective: 1000px;
-  perspective-origin: 50% 45%;
-}
-
-/* Glow behind assembled tiles */
-.hero-mosaic-glow {
-  position: absolute;
-  inset: -35%;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ── Mosaic assembled grid ── */
-.htile-stage {
-  position: relative;
-  pointer-events: auto;
-}
-
-/* Individual tile — absolutely positioned within htile-grid */
-.htile {
-  position: absolute;
-  will-change: transform, opacity;
-}
-
-/* Dot nav */
-.htile-dots {
-  position: absolute;
-  bottom: -32px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 6px;
-  z-index: 20;
-}
-.htile-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.2);
-  border: none;
-  cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
-  padding: 0;
-}
-.htile-dot:hover { background: rgba(255,255,255,0.5); }
-
-/* Progress bar */
-.htile-bar {
-  position: absolute;
-  bottom: -42px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  border-radius: 1px;
-  transform-origin: left;
-  opacity: 0.5;
-}
-
-/* Image label */
-.htile-label {
-  position: absolute;
-  bottom: -60px;
-  left: 0;
-  font-family: var(--font-label);
-  font-size: 0.62rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.28);
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  white-space: nowrap;
-}
-
-/* ── Left text panel — sits above mosaic on z-axis ── */
-.hero-text-panel {
-  position: relative;
-  z-index: 10;
-  max-width: 1200px;
+  z-index: 5;
+  max-width: 1280px;
   width: 100%;
   margin: 0 auto;
-  padding: 0 4rem;
-  /* Only take up left half width so mosaic is visible on right */
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  padding: 0 3rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 2rem;
+  min-height: calc(100vh - 12rem);
+}
+
+/* ── LEFT: text ── */
+.hero-left {
+  position: relative;
+  z-index: 6;
 }
 
 /* Location badge */
@@ -871,7 +803,7 @@ section {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  background: rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 100px;
   padding: 0.4rem 1rem 0.4rem 0.65rem;
@@ -892,8 +824,8 @@ section {
   animation: badgePulse 2s ease-in-out infinite;
 }
 @keyframes badgePulse {
-  0%, 100% { box-shadow: 0 0 0 0 currentColor; }
-  50%       { box-shadow: 0 0 0 4px transparent; }
+  0%,100% { opacity: 1; }
+  50%     { opacity: 0.4; }
 }
 .hero-badge-year {
   border-left: 1px solid rgba(255,255,255,0.14);
@@ -905,33 +837,23 @@ section {
 /* Heading */
 .hero-title {
   font-family: var(--font-display);
-  font-size: clamp(3.8rem, 5.5vw, 6rem);
+  font-size: clamp(3.2rem, 5vw, 5.5rem);
   font-weight: 300;
   line-height: 1.02;
   color: #fff;
   margin-bottom: 1.25rem;
-  max-width: 600px;
-  /* Glass text shadow for readability over photos */
-  text-shadow: 0 2px 32px rgba(0,0,0,0.55), 0 1px 4px rgba(0,0,0,0.8);
 }
-.hero-title-first {
-  display: block;
-  opacity: 0.9;
-}
-.hero-title-last {
-  display: block;
-  font-style: italic;
-}
+.hero-title-first { display: block; opacity: 0.88; }
+.hero-title-last  { display: block; font-style: italic; }
 
 /* Tagline */
 .hero-tagline {
   font-size: 1rem;
   font-weight: 300;
-  color: rgba(255,255,255,0.52);
+  color: rgba(255,255,255,0.5);
   max-width: 400px;
   line-height: 1.8;
   margin-bottom: 2.5rem;
-  text-shadow: 0 1px 8px rgba(0,0,0,0.6);
 }
 
 /* CTAs */
@@ -949,6 +871,94 @@ section {
   color: var(--accent, #d4af37);
   border-color: var(--accent, #d4af37);
   background: var(--accent-soft);
+}
+
+/* ── RIGHT: scene ── */
+.hero-right {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 560px;
+  overflow: visible;
+}
+.hero-right-tilt {
+  position: relative;
+  width: 100%;
+  min-height: 560px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+/* ── Scene stage ── */
+.hscene-stage {
+  position: relative;
+  width: 360px;
+  height: 360px;
+  overflow: visible;
+}
+.hscene-glow {
+  position: absolute;
+  inset: -40%;
+  pointer-events: none;
+  z-index: 0;
+}
+.hscene-main {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 340px;
+  height: 340px;
+  margin-left: -170px;
+  margin-top: -170px;
+  z-index: 5;
+  filter: drop-shadow(0 16px 40px rgba(0,0,0,0.6));
+}
+.hscene-dots {
+  position: absolute;
+  bottom: -36px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 20;
+}
+.hscene-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  cursor: pointer;
+  transition: background 0.25s, transform 0.2s;
+  padding: 0;
+}
+.hscene-dot:hover { background: rgba(255,255,255,0.5); }
+.hscene-bar {
+  position: absolute;
+  bottom: -46px;
+  left: -30px;
+  width: calc(100% + 60px);
+  height: 2px;
+  border-radius: 1px;
+  transform-origin: left;
+  opacity: 0.45;
+}
+.hscene-label {
+  position: absolute;
+  bottom: -64px;
+  left: 0;
+  font-family: var(--font-label);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.28);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
 }
 
 /* ── Scroll cue ── */
@@ -976,22 +986,27 @@ section {
   animation: scrollPulse 2.2s ease-in-out infinite;
 }
 @keyframes scrollPulse {
-  0%, 100% { opacity: 0.25; transform: scaleY(1); }
-  50%       { opacity: 0.9;  transform: scaleY(1.18); }
+  0%,100% { opacity: 0.25; transform: scaleY(1); }
+  50%     { opacity: 0.9;  transform: scaleY(1.18); }
 }
 
 /* ── Tablet ── */
-@media (max-width: 900px) {
-  .hero-text-panel { padding: 0 2rem; }
-  .hero-title { font-size: clamp(3rem, 8vw, 4.5rem); }
+@media (max-width: 1024px) {
+  .hero-split { grid-template-columns: 1fr; padding: 0 2rem; gap: 0; min-height: auto; }
+  .hero-left { text-align: center; }
+  .hero-tagline { margin-left: auto; margin-right: auto; }
+  .hero-actions { justify-content: center; }
+  .hero-right, .hero-right-tilt { min-height: 440px; }
+  .hscene-main { width: 280px; height: 280px; margin-left: -140px; margin-top: -140px; }
 }
-
 /* ── Mobile ── */
 @media (max-width: 600px) {
   .hero-v3 { padding: 6rem 0 5rem; }
-  .hero-text-panel { padding: 0 1.5rem; }
+  .hero-split { padding: 0 1.5rem; }
   .hero-title { font-size: 2.8rem; }
-  .hero-tagline { font-size: 0.92rem; }
+  .hero-right, .hero-right-tilt { min-height: 340px; }
+  .hscene-stage { width: 280px; height: 280px; }
+  .hscene-main { width: 240px; height: 240px; margin-left: -120px; margin-top: -120px; }
 }
 
 /* ── Stats ── */
