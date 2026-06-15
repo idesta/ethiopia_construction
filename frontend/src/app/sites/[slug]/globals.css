@@ -720,24 +720,150 @@ section {
   pointer-events: none;
 }
 
-/* ── Split inner container ── */
-.hero-split-inner {
-  position: relative;
-  z-index: 5;
-  max-width: 1300px;
-  margin: 0 auto;
-  padding: 0 4rem;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+/* ══════════════════════════════════════════════════════════
+   HERO V3  —  Full-section mosaic backdrop + left text panel
+   ══════════════════════════════════════════════════════════ */
+.hero-v3 {
+  min-height: 100vh;
+  display: flex;
   align-items: center;
-  gap: 2rem;
-  min-height: calc(100vh - 12rem);
+  padding: 7rem 0 5rem;
+  position: relative;
+  overflow: hidden;
 }
 
-/* ── Left: text content ── */
-.hero-content--left {
+/* Gradient background */
+.hero-mesh {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  will-change: transform;
+}
+
+/* Noise grain */
+.hero-grain {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* Blueprint grid */
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+  background-size: 72px 72px;
+  pointer-events: none;
+}
+
+/* ── Mosaic stage — full section, overflow visible so tiles scatter anywhere ── */
+.hero-mosaic-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* overflow MUST be visible — tiles scatter outside this box */
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* Tilt/perspective wrapper around assembled mosaic */
+.hero-mosaic-center {
   position: relative;
-  z-index: 6;
+  perspective: 1000px;
+  perspective-origin: 50% 45%;
+}
+
+/* Glow behind assembled tiles */
+.hero-mosaic-glow {
+  position: absolute;
+  inset: -35%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Mosaic assembled grid ── */
+.htile-stage {
+  position: relative;
+  pointer-events: auto;
+}
+
+/* Individual tile — absolutely positioned within htile-grid */
+.htile {
+  position: absolute;
+  will-change: transform, opacity;
+}
+
+/* Dot nav */
+.htile-dots {
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 20;
+}
+.htile-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  padding: 0;
+}
+.htile-dot:hover { background: rgba(255,255,255,0.5); }
+
+/* Progress bar */
+.htile-bar {
+  position: absolute;
+  bottom: -42px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  border-radius: 1px;
+  transform-origin: left;
+  opacity: 0.5;
+}
+
+/* Image label */
+.htile-label {
+  position: absolute;
+  bottom: -60px;
+  left: 0;
+  font-family: var(--font-label);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.28);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+/* ── Left text panel — sits above mosaic on z-axis ── */
+.hero-text-panel {
+  position: relative;
+  z-index: 10;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 4rem;
+  /* Only take up left half width so mosaic is visible on right */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 /* Location badge */
@@ -745,7 +871,7 @@ section {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 100px;
   padding: 0.4rem 1rem 0.4rem 0.65rem;
@@ -754,47 +880,43 @@ section {
   font-size: 0.72rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.55);
-  backdrop-filter: blur(8px);
+  color: rgba(255,255,255,0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 .hero-badge-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
-  box-shadow: 0 0 6px currentColor;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 0 currentColor; }
+  50%       { box-shadow: 0 0 0 4px transparent; }
 }
 .hero-badge-year {
-  border-left: 1px solid rgba(255,255,255,0.15);
+  border-left: 1px solid rgba(255,255,255,0.14);
   padding-left: 0.6rem;
   margin-left: 0.2rem;
-  color: rgba(255,255,255,0.35);
-}
-
-.hero-brand { margin-bottom: 1.25rem; }
-.hero-logo {
-  display: block;
-  max-height: 56px;
-  width: auto;
-  border-radius: 4px;
-  background: rgba(255,255,255,0.07);
-  padding: 0.4rem 0.75rem;
-  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.3);
 }
 
 /* Heading */
 .hero-title {
   font-family: var(--font-display);
-  font-size: clamp(3.5rem, 6vw, 5.5rem);
+  font-size: clamp(3.8rem, 5.5vw, 6rem);
   font-weight: 300;
   line-height: 1.02;
-  letter-spacing: 0;
   color: #fff;
   margin-bottom: 1.25rem;
+  max-width: 600px;
+  /* Glass text shadow for readability over photos */
+  text-shadow: 0 2px 32px rgba(0,0,0,0.55), 0 1px 4px rgba(0,0,0,0.8);
 }
 .hero-title-first {
   display: block;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 .hero-title-last {
   display: block;
@@ -805,39 +927,11 @@ section {
 .hero-tagline {
   font-size: 1rem;
   font-weight: 300;
-  color: rgba(255,255,255,0.5);
-  max-width: 420px;
+  color: rgba(255,255,255,0.52);
+  max-width: 400px;
   line-height: 1.8;
-  margin-bottom: 2rem;
-}
-
-/* Stats */
-.hero-stats-row {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
   margin-bottom: 2.5rem;
-  flex-wrap: wrap;
-}
-.hero-stat { display: flex; flex-direction: column; gap: 0.15rem; }
-.hero-stat-num {
-  font-family: var(--font-display);
-  font-size: 1.9rem;
-  font-weight: 500;
-  line-height: 1;
-}
-.hero-stat-label {
-  font-family: var(--font-label);
-  font-size: 0.62rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.35);
-}
-.hero-stat-divider {
-  width: 1px;
-  height: 28px;
-  opacity: 0.25;
-  flex-shrink: 0;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.6);
 }
 
 /* CTAs */
@@ -848,8 +942,8 @@ section {
   flex-wrap: wrap;
 }
 .hero .btn-outline {
-  color: rgba(255,255,255,0.8);
-  border-color: rgba(255,255,255,0.22);
+  color: rgba(255,255,255,0.82);
+  border-color: rgba(255,255,255,0.24);
 }
 .hero .btn-outline:hover {
   color: var(--accent, #d4af37);
@@ -857,173 +951,7 @@ section {
   background: var(--accent-soft);
 }
 
-/* ── Right: 3D scene ── */
-.hero-scene-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  perspective: 900px;
-  perspective-origin: 50% 45%;
-  min-height: 560px;
-}
-
-/* ── Scattered image mosaic ── */
-.hero-mosaic-layer {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 0;
-  pointer-events: none;
-}
-.hero-mosaic {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  max-width: 500px;
-  max-height: 420px;
-  pointer-events: auto;
-}
-.hero-mosaic-grid {
-  width: 100%;
-  height: 100%;
-  border-radius: 8px;
-  overflow: visible;
-}
-/* Each tile */
-.hero-tile {
-  border-radius: 4px;
-  overflow: hidden;
-  position: relative;
-  will-change: transform, opacity;
-}
-.hero-tile-clip {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  border-radius: 4px;
-}
-.hero-tile-img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  object-fit: cover;
-  pointer-events: none;
-  user-select: none;
-}
-.hero-tile-border {
-  position: absolute;
-  inset: 0;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  pointer-events: none;
-  z-index: 2;
-}
-
-/* Dot nav */
-.hero-mosaic-dots {
-  position: absolute;
-  bottom: -28px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 6px;
-  z-index: 10;
-}
-.hero-mosaic-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.18);
-  border: none;
-  cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
-  padding: 0;
-}
-.hero-mosaic-dot:hover { background: rgba(255,255,255,0.45); }
-
-/* Progress bar */
-.hero-mosaic-bar {
-  position: absolute;
-  bottom: -36px;
-  left: 0;
-  height: 2px;
-  width: 100%;
-  border-radius: 1px;
-  transform-origin: left;
-  opacity: 0.55;
-}
-
-/* Image label */
-.hero-mosaic-label {
-  position: absolute;
-  bottom: -54px;
-  left: 0;
-  font-family: var(--font-label);
-  font-size: 0.65rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.3);
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-/* Tilt container */
-.hero-tilt {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* ── Right: mosaic scene ── */
-.hero-scene-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  perspective: 900px;
-  perspective-origin: 50% 45%;
-  min-height: 480px;
-  padding: 2rem;
-}
-
-/* Depth rings */
-.hero-depth-ring {
-  position: absolute;
-  border-radius: 50%;
-  border: 1px solid transparent;
-  pointer-events: none;
-}
-.hero-depth-ring--1 { width: 520px; height: 520px; }
-.hero-depth-ring--2 { width: 640px; height: 640px; }
-
-/* Glow halo behind mosaic */
-.hero-iso-glow {
-  position: absolute;
-  inset: -30%;
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* Isometric SVG sizing (kept for reference, not used in split layout) */
-.hero-iso-svg {
-  width: min(500px, 52vw);
-  height: auto;
-  display: block;
-}
-.hero-iso-wrap {
-  position: relative;
-  z-index: 2;
-}
-
-/* ── Scroll indicator ── */
+/* ── Scroll cue ── */
 .hero-scroll {
   position: absolute;
   bottom: 2rem;
@@ -1033,14 +961,14 @@ section {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  z-index: 10;
+  z-index: 20;
 }
 .hero-scroll span {
   font-family: var(--font-label);
   font-size: 0.62rem;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.25);
+  color: rgba(255,255,255,0.28);
 }
 .scroll-line {
   width: 1px;
@@ -1053,30 +981,17 @@ section {
 }
 
 /* ── Tablet ── */
-@media (max-width: 1024px) {
-  .hero-split-inner {
-    grid-template-columns: 1fr;
-    padding: 0 2rem;
-    gap: 0;
-    min-height: auto;
-  }
-  .hero-split { padding: 8rem 0 10rem; }
-  .hero-content--left { text-align: center; }
-  .hero-tagline { margin-left: auto; margin-right: auto; }
-  .hero-badge, .hero-stats-row, .hero-actions { justify-content: center; }
-  .hero-scene-wrap { min-height: 400px; padding: 3rem 2rem 4rem; }
-  .hero-mosaic { max-width: 380px; max-height: 320px; }
-  .hero-depth-ring--1 { width: 400px; height: 400px; }
-  .hero-depth-ring--2 { display: none; }
+@media (max-width: 900px) {
+  .hero-text-panel { padding: 0 2rem; }
+  .hero-title { font-size: clamp(3rem, 8vw, 4.5rem); }
 }
 
 /* ── Mobile ── */
-@media (max-width: 640px) {
-  .hero-title { font-size: 3rem; }
-  .hero-scene-wrap { min-height: 300px; padding: 2rem 1rem 4rem; }
-  .hero-mosaic { max-width: 300px; max-height: 260px; }
-  .hero-depth-ring--1 { width: 300px; height: 300px; }
-  .hero-stat-num { font-size: 1.5rem; }
+@media (max-width: 600px) {
+  .hero-v3 { padding: 6rem 0 5rem; }
+  .hero-text-panel { padding: 0 1.5rem; }
+  .hero-title { font-size: 2.8rem; }
+  .hero-tagline { font-size: 0.92rem; }
 }
 
 /* ── Stats ── */
