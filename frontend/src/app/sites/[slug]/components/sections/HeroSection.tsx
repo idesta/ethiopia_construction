@@ -508,11 +508,11 @@ const N = SCENES.length; // 10 pieces to scatter
 /* Scatter destinations — spread wide across the hero */
 const SCATTER = Array.from({ length: N }, (_, i) => {
   const angle = (i / N) * 2 * Math.PI - Math.PI / 2;
-  const radius = 320 + i * 22;
+  const radius = 420 + i * 28;
   return {
     x:   Math.cos(angle) * radius,
-    y:   Math.sin(angle) * radius * 0.7,
-    rot: (i % 2 === 0 ? 1 : -1) * (25 + i * 8),
+    y:   Math.sin(angle) * radius * 0.65,
+    rot: (i % 2 === 0 ? 1 : -1) * (28 + i * 9),
   };
 });
 
