@@ -703,6 +703,10 @@ section {
   width: 1px;
   height: 100%;
 }
+.hero-accent-line--right {
+  right: auto;
+  left: 25%;
+}
 .hero-number {
   position: absolute;
   right: 2.5rem;
@@ -717,10 +721,155 @@ section {
   user-select: none;
   pointer-events: none;
 }
+
+/* ── 3D Hero specifics ── */
+.hero-3d {
+  perspective: 1200px;
+  perspective-origin: 50% 40%;
+}
+
+/* Ground plane receding grid */
+.hero-ground-plane {
+  position: absolute;
+  bottom: 0;
+  left: -20%;
+  right: -20%;
+  height: 55%;
+  background-image:
+    linear-gradient(rgba(212, 175, 55, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 175, 55, 0.06) 1px, transparent 1px);
+  background-size: 60px 60px;
+  transform: rotateX(65deg);
+  transform-origin: bottom center;
+  pointer-events: none;
+  mask-image: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 80%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 80%);
+}
+
+/* Ambient glow overlay */
+.hero-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Parallax layer system ── */
+.hero-3d-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Background layer — distant, small */
+.hero-3d-layer--bg {
+  z-index: 1;
+}
+.h3d-iso--far-left {
+  position: absolute;
+  top: 12%;
+  left: 8%;
+  opacity: 0.28;
+  filter: blur(1.5px);
+}
+.h3d-iso--far-right {
+  position: absolute;
+  top: 8%;
+  right: 10%;
+  opacity: 0.22;
+  filter: blur(1.5px);
+}
+.h3d-iso--far-center {
+  position: absolute;
+  top: 15%;
+  left: 48%;
+  transform: translateX(-50%);
+  opacity: 0.2;
+  filter: blur(1px);
+}
+
+/* Mid layer */
+.hero-3d-layer--mid {
+  z-index: 2;
+}
+.h3d-iso--mid-left {
+  position: absolute;
+  top: 20%;
+  left: 3%;
+  opacity: 0.52;
+  filter: blur(0.5px);
+}
+.h3d-iso--mid-right {
+  position: absolute;
+  top: 18%;
+  right: 4%;
+  opacity: 0.46;
+  filter: blur(0.5px);
+}
+.h3d-iso--mid-center {
+  position: absolute;
+  top: 5%;
+  left: 55%;
+  opacity: 0.4;
+}
+
+/* Front machinery layer */
+.hero-3d-layer--front {
+  z-index: 3;
+}
+.h3d-iso--crane {
+  position: absolute;
+  top: 5%;
+  right: 18%;
+  opacity: 0.75;
+}
+.h3d-iso--excavator {
+  position: absolute;
+  bottom: 22%;
+  right: 6%;
+  opacity: 0.7;
+}
+.h3d-iso--blueprint {
+  position: absolute;
+  top: 28%;
+  left: 18%;
+  opacity: 0.6;
+}
+
+/* Nearest layer */
+.hero-3d-layer--near {
+  z-index: 4;
+}
+.h3d-iso--hardhat {
+  position: absolute;
+  bottom: 30%;
+  left: 8%;
+  opacity: 0.85;
+}
+.h3d-iso--diamond1 {
+  position: absolute;
+  top: 22%;
+  right: 38%;
+  opacity: 0.65;
+}
+.h3d-iso--diamond2 {
+  position: absolute;
+  bottom: 38%;
+  right: 32%;
+  opacity: 0.45;
+}
+.h3d-iso--diamond3 {
+  position: absolute;
+  top: 55%;
+  left: 32%;
+  opacity: 0.5;
+}
+
 .hero-content {
   position: relative;
-  z-index: 1;
-  max-width: 880px;
+  z-index: 10;
+  max-width: 680px;
 }
 .hero-eyebrow {
   font-family: var(--font-label);
@@ -764,8 +913,42 @@ section {
   color: rgba(255, 255, 255, 0.55);
   max-width: 500px;
   line-height: 1.75;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
 }
+
+/* ── Inline hero stats row ── */
+.hero-stats-row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.hero-stat-num {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 500;
+  line-height: 1;
+}
+.hero-stat-label {
+  font-family: var(--font-label);
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+.hero-stat-divider {
+  width: 1px;
+  height: 32px;
+  opacity: 0.3;
+  flex-shrink: 0;
+}
+
 .hero-actions {
   display: flex;
   gap: 1rem;
@@ -781,7 +964,7 @@ section {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  z-index: 1;
+  z-index: 10;
 }
 .hero-scroll span {
   font-family: var(--font-label);
@@ -805,6 +988,20 @@ section {
     opacity: 1;
     transform: scaleY(1.2);
   }
+}
+
+/* ── Mobile: simplify 3D scene ── */
+@media (max-width: 768px) {
+  .h3d-iso--crane { right: 2%; top: 2%; }
+  .h3d-iso--excavator { display: none; }
+  .h3d-iso--blueprint { display: none; }
+  .h3d-iso--mid-left { display: none; }
+  .h3d-iso--far-center { display: none; }
+  .h3d-iso--diamond2,
+  .h3d-iso--diamond3 { display: none; }
+  .hero-ground-plane { display: none; }
+  .hero-title { font-size: 3.8rem; }
+  .hero-stat-num { font-size: 1.5rem; }
 }
 
 /* ── Stats ── */
