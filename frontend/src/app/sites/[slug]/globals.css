@@ -880,22 +880,31 @@ section {
 }
 .hero-mosaic {
   position: relative;
-  width: min(440px, 48vw);
-  aspect-ratio: 1 / 1;
+  width: 100%;
+  height: 100%;
+  max-width: 500px;
+  max-height: 420px;
   pointer-events: auto;
 }
 .hero-mosaic-grid {
   width: 100%;
   height: 100%;
   border-radius: 8px;
-  overflow: visible; /* tiles scatter outside bounds */
+  overflow: visible;
 }
 /* Each tile */
 .hero-tile {
-  border-radius: 3px;
+  border-radius: 4px;
   overflow: hidden;
   position: relative;
   will-change: transform, opacity;
+}
+.hero-tile-clip {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 4px;
 }
 .hero-tile-img {
   position: absolute;
@@ -909,116 +918,109 @@ section {
   position: absolute;
   inset: 0;
   border: 1px solid transparent;
-  border-radius: 3px;
+  border-radius: 4px;
   pointer-events: none;
   z-index: 2;
-  transition: border-color 0.3s;
-}
-.hero-mosaic:hover .hero-tile-border {
-  border-color: rgba(255,255,255,0.15);
 }
 
 /* Dot nav */
 .hero-mosaic-dots {
   position: absolute;
-  bottom: -24px;
+  bottom: -28px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 5px;
+  gap: 6px;
   z-index: 10;
 }
 .hero-mosaic-dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.18);
   border: none;
   cursor: pointer;
   transition: background 0.3s, transform 0.2s;
   padding: 0;
 }
-.hero-mosaic-dot.active {
-  transform: scale(1.5);
-}
-.hero-mosaic-dot:hover {
-  background: rgba(255,255,255,0.5);
-}
+.hero-mosaic-dot:hover { background: rgba(255,255,255,0.45); }
 
 /* Progress bar */
-.hero-mosaic-progress {
+.hero-mosaic-bar {
   position: absolute;
-  bottom: -32px;
+  bottom: -36px;
   left: 0;
   height: 2px;
   width: 100%;
   border-radius: 1px;
   transform-origin: left;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
-/* Depth rings (decorative circles behind scene) */
+/* Image label */
+.hero-mosaic-label {
+  position: absolute;
+  bottom: -54px;
+  left: 0;
+  font-family: var(--font-label);
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Tilt container */
+.hero-tilt {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Right: mosaic scene ── */
+.hero-scene-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 900px;
+  perspective-origin: 50% 45%;
+  min-height: 480px;
+  padding: 2rem;
+}
+
+/* Depth rings */
 .hero-depth-ring {
   position: absolute;
   border-radius: 50%;
   border: 1px solid transparent;
   pointer-events: none;
 }
-.hero-depth-ring--1 { width: 480px; height: 480px; }
-.hero-depth-ring--2 { width: 580px; height: 580px; }
-.hero-depth-ring--3 { width: 680px; height: 680px; }
+.hero-depth-ring--1 { width: 520px; height: 520px; }
+.hero-depth-ring--2 { width: 640px; height: 640px; }
 
-/* Orbit ring container */
-.hero-orbit {
+/* Glow halo behind mosaic */
+.hero-iso-glow {
   position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  inset: -30%;
   pointer-events: none;
-}
-.hero-orbit-ring {
-  position: relative;
-  width: 320px;
-  height: 320px;
-  border-radius: 50%;
-  border: 1px dashed transparent;
-}
-.hero-orbit-item {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  margin-top: -20px;
-  margin-left: -20px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255,255,255,0.04);
-  border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.08);
+  z-index: -1;
 }
 
-/* Isometric scene container */
-.hero-iso-wrap {
-  position: relative;
-  z-index: 2;
-  cursor: none;
-}
+/* Isometric SVG sizing (kept for reference, not used in split layout) */
 .hero-iso-svg {
   width: min(500px, 52vw);
   height: auto;
   display: block;
-  filter: drop-shadow(0 24px 48px rgba(0,0,0,0.5));
 }
-
-/* Glow halo under scene */
-.hero-iso-glow {
-  position: absolute;
-  inset: -20%;
-  pointer-events: none;
-  z-index: -1;
+.hero-iso-wrap {
+  position: relative;
+  z-index: 2;
 }
 
 /* ── Scroll indicator ── */
@@ -1058,29 +1060,22 @@ section {
     gap: 0;
     min-height: auto;
   }
-  .hero-split { padding: 8rem 0 14rem; }
+  .hero-split { padding: 8rem 0 10rem; }
   .hero-content--left { text-align: center; }
   .hero-tagline { margin-left: auto; margin-right: auto; }
   .hero-badge, .hero-stats-row, .hero-actions { justify-content: center; }
-  .hero-scene-wrap { min-height: 420px; }
-  .hero-iso-svg { width: min(380px, 72vw); }
-  .hero-mosaic { width: min(340px, 68vw); }
-  .hero-depth-ring--1 { width: 360px; height: 360px; }
-  .hero-depth-ring--2 { width: 440px; height: 440px; }
-  .hero-depth-ring--3 { display: none; }
+  .hero-scene-wrap { min-height: 400px; padding: 3rem 2rem 4rem; }
+  .hero-mosaic { max-width: 380px; max-height: 320px; }
+  .hero-depth-ring--1 { width: 400px; height: 400px; }
+  .hero-depth-ring--2 { display: none; }
 }
 
 /* ── Mobile ── */
 @media (max-width: 640px) {
   .hero-title { font-size: 3rem; }
-  .hero-scene-wrap { min-height: 300px; }
-  .hero-iso-svg { width: min(280px, 86vw); }
-  .hero-mosaic { width: min(260px, 84vw); }
-  .hero-orbit-ring { width: 240px; height: 240px; }
-  .hero-orbit-item:nth-child(3),
-  .hero-orbit-item:nth-child(4) { display: none; }
-  .hero-depth-ring--1 { width: 280px; height: 280px; }
-  .hero-depth-ring--2 { display: none; }
+  .hero-scene-wrap { min-height: 300px; padding: 2rem 1rem 4rem; }
+  .hero-mosaic { max-width: 300px; max-height: 260px; }
+  .hero-depth-ring--1 { width: 300px; height: 300px; }
   .hero-stat-num { font-size: 1.5rem; }
 }
 
