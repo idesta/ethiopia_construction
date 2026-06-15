@@ -868,6 +868,95 @@ section {
   min-height: 560px;
 }
 
+/* ── Scattered image mosaic ── */
+.hero-mosaic-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 0;
+  pointer-events: none;
+}
+.hero-mosaic {
+  position: relative;
+  width: min(440px, 48vw);
+  aspect-ratio: 1 / 1;
+  pointer-events: auto;
+}
+.hero-mosaic-grid {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  overflow: visible; /* tiles scatter outside bounds */
+}
+/* Each tile */
+.hero-tile {
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+  will-change: transform, opacity;
+}
+.hero-tile-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+}
+.hero-tile-border {
+  position: absolute;
+  inset: 0;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  pointer-events: none;
+  z-index: 2;
+  transition: border-color 0.3s;
+}
+.hero-mosaic:hover .hero-tile-border {
+  border-color: rgba(255,255,255,0.15);
+}
+
+/* Dot nav */
+.hero-mosaic-dots {
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 5px;
+  z-index: 10;
+}
+.hero-mosaic-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  padding: 0;
+}
+.hero-mosaic-dot.active {
+  transform: scale(1.5);
+}
+.hero-mosaic-dot:hover {
+  background: rgba(255,255,255,0.5);
+}
+
+/* Progress bar */
+.hero-mosaic-progress {
+  position: absolute;
+  bottom: -32px;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  border-radius: 1px;
+  transform-origin: left;
+  opacity: 0.6;
+}
+
 /* Depth rings (decorative circles behind scene) */
 .hero-depth-ring {
   position: absolute;
@@ -969,12 +1058,13 @@ section {
     gap: 0;
     min-height: auto;
   }
-  .hero-split { padding: 8rem 0 12rem; }
+  .hero-split { padding: 8rem 0 14rem; }
   .hero-content--left { text-align: center; }
   .hero-tagline { margin-left: auto; margin-right: auto; }
   .hero-badge, .hero-stats-row, .hero-actions { justify-content: center; }
-  .hero-scene-wrap { min-height: 380px; }
+  .hero-scene-wrap { min-height: 420px; }
   .hero-iso-svg { width: min(380px, 72vw); }
+  .hero-mosaic { width: min(340px, 68vw); }
   .hero-depth-ring--1 { width: 360px; height: 360px; }
   .hero-depth-ring--2 { width: 440px; height: 440px; }
   .hero-depth-ring--3 { display: none; }
@@ -983,8 +1073,9 @@ section {
 /* ── Mobile ── */
 @media (max-width: 640px) {
   .hero-title { font-size: 3rem; }
-  .hero-scene-wrap { min-height: 280px; }
-  .hero-iso-svg { width: min(300px, 88vw); }
+  .hero-scene-wrap { min-height: 300px; }
+  .hero-iso-svg { width: min(280px, 86vw); }
+  .hero-mosaic { width: min(260px, 84vw); }
   .hero-orbit-ring { width: 240px; height: 240px; }
   .hero-orbit-item:nth-child(3),
   .hero-orbit-item:nth-child(4) { display: none; }
