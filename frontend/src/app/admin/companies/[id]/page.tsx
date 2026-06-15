@@ -204,6 +204,14 @@ export default function CompanyEditorPage() {
                   Services
                 </button>
                 <button
+                  className="btn btn-secondary btn-sm"
+                  onClick={() =>
+                    router.push(`/admin/companies/${params.id}/hero-scenes`)
+                  }
+                >
+                  🎬 Hero Scenes
+                </button>
+                <button
                   className="btn btn-ghost btn-sm"
                   onClick={() => window.open(`/sites/${tenant.slug}`, "_blank")}
                 >

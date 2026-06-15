@@ -139,11 +139,39 @@ export async function uploadFile(
 export const heroScenes = {
   list: (tenantId: string) => get<HeroScene[]>(`/api/hero-scenes/${tenantId}`),
 
-  create: (tenantId: string, data: Partial<HeroScene>) =>
-    post<HeroScene>(`/api/tenants/${tenantId}/hero-scenes`, data),
+  upload: async (tenantId: string, file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch(`${BASE}/api/hero-scenes/${tenantId}`, {
+      method: "POST",
+      credentials: "include",
+      body: formData,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: res.statusText }));
+      throw new Error(err.message || "Upload failed");
+    }
+    return res.json();
+  },
 
   remove: (id: string) => del(`/api/hero-scenes/${id}`),
+
+  reorder: (tenantId: string, order: string[]) =>
+    request<{ message: string }>(`/api/hero-scenes/${tenantId}/reorder`, {
+      method: "PATCH",
+      body: JSON.stringify({ order }),
+    }),
 };
+
+export interface HeroScene {
+  id: string;
+  tenant_id: string;
+  url: string;
+  file_path: string;
+  label: string | null;
+  sort_order: number;
+  created_at: string;
+}
 
 // ── Types ─────────────────────────────────
 
@@ -158,13 +186,6 @@ export interface Tenant {
   founded_year: number;
   is_active: boolean;
   created_at: string;
-}
-
-export interface HeroScene {
-  id: string;
-  tenant_id: string;
-  url: string;
-  sort_order: number;
 }
 
 export interface TenantFull extends Tenant {

@@ -1,4 +1,6 @@
 import { Pool } from "pg";
+import fs from "fs";
+import path from "path";
 
 // Connection pool — reused across all requests
 export const db = new Pool({
@@ -12,11 +14,36 @@ export const db = new Pool({
   connectionTimeoutMillis: 2000,
 });
 
-// Test connection on startup
+// Run schema.sql on startup to create any missing tables.
+// Split by semicolons and run each statement individually
+// (pg Pool doesn't support multi-statement queries).
+async function initSchema() {
+  try {
+    const schemaPath = path.join(__dirname, "schema.sql");
+    if (!fs.existsSync(schemaPath)) {
+      console.warn("⚠️  Schema file not found:", schemaPath);
+      return;
+    }
+    const schema = fs.readFileSync(schemaPath, "utf-8");
+    const statements = schema
+      .split(";")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0 && !s.startsWith("--"));
+    for (const stmt of statements) {
+      await db.query(stmt);
+    }
+    console.log("✅ Schema initialized (tables verified)");
+  } catch (err) {
+    console.error("⚠️  Schema init failed:", (err as Error).message);
+  }
+}
+
+// Test connection on startup + run schema
 db.connect()
-  .then((client) => {
+  .then(async (client) => {
     console.log("✅ PostgreSQL connected");
     client.release();
+    await initSchema();
   })
   .catch((err) => {
     console.error("❌ PostgreSQL connection failed:", err.message);
