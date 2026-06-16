@@ -42,7 +42,11 @@ router.post(
       }
       req.body = req.body || {};
       req.body.tenant = rows[0].slug;
+      // Multer's destination() reads req.body.folder or req.query.folder.
+      // In practice req.body may not be populated yet when multer runs,
+      // so also set the query param to ensure correct destination.
       req.body.folder = "hero-scenes";
+      req.query.folder = "hero-scenes";
       next();
     } catch (err) {
       next(err);

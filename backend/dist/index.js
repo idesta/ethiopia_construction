@@ -13,6 +13,8 @@ const projects_1 = __importDefault(require("./routes/projects"));
 const team_1 = __importDefault(require("./routes/team"));
 const services_1 = __importDefault(require("./routes/services"));
 const upload_1 = __importDefault(require("./routes/upload"));
+const contact_1 = __importDefault(require("./routes/contact"));
+const heroScenes_1 = __importDefault(require("./routes/heroScenes"));
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 4000;
 // ── Trust proxy headers (nginx sets X-Forwarded-* headers) ──
@@ -46,10 +48,13 @@ app.use("/api/projects", projects_1.default);
 app.use("/api/team", team_1.default);
 app.use("/api/services", services_1.default);
 app.use("/api/upload", upload_1.default);
+app.use("/api/hero-scenes", heroScenes_1.default);
 // ── Health check ──────────────────────────
 app.get("/health", (_req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
+// Mount public contact route
+app.use("/api/contact", contact_1.default);
 // ── 404 handler ───────────────────────────
 app.use((_req, res) => {
     res.status(404).json({ message: "Route not found" });
