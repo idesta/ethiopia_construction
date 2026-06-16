@@ -57,14 +57,36 @@ export default function HeroScenesPage() {
   }, [tenant?.accent_color, tenant?.primary_color]);
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
     setUploading(true);
     try {
-      const created = await heroScenesApi.upload(tenantId, file, tenant?.slug || "");
-      setScenes((prev) => [...prev, created]);
-      showToast("Scene uploaded!", "success");
+      const fileArray = Array.from(files);
+      const labelsFromNames = fileArray.map((f) => {
+        const base = f.name.replace(/\.[^.]+$/, "");
+        return base || f.name;
+      });
+
+      if (fileArray.length === 1) {
+        const created = await heroScenesApi.upload(
+          tenantId,
+          fileArray[0],
+          tenant?.slug || "",
+          labelsFromNames[0],
+        );
+        setScenes((prev) => [...prev, created]);
+        showToast("Scene uploaded!", "success");
+      } else {
+        const created = await heroScenesApi.uploadBatch(
+          tenantId,
+          fileArray,
+          tenant?.slug || "",
+          labelsFromNames,
+        );
+        setScenes((prev) => [...prev, ...created]);
+        showToast(`${created.length} scenes uploaded!`, "success");
+      }
     } catch (err: any) {
       showToast(err.message || "Upload failed", "error");
     } finally {
@@ -114,6 +136,7 @@ export default function HeroScenesPage() {
             ref={fileInputRef}
             type="file"
             accept="image/*,.svg"
+            multiple
             style={{ display: "none" }}
             onChange={handleUpload}
           />

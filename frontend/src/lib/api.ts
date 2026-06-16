@@ -139,10 +139,16 @@ export async function uploadFile(
 export const heroScenes = {
   list: (tenantId: string) => get<HeroScene[]>(`/api/hero-scenes/${tenantId}`),
 
-  upload: async (tenantId: string, file: File, tenantSlug: string) => {
+  upload: async (
+    tenantId: string,
+    file: File,
+    tenantSlug: string,
+    label?: string,
+  ) => {
     const formData = new FormData();
-    formData.append("file", file);
-    // Send slug as query param (multer reads req.query.tenant)
+    formData.append("files", file);
+    if (label !== undefined) formData.append("labels", label);
+
     const res = await fetch(
       `${BASE}/api/hero-scenes/${tenantId}?tenant=${encodeURIComponent(tenantSlug)}`,
       {
@@ -151,11 +157,49 @@ export const heroScenes = {
         body: formData,
       },
     );
+
     if (!res.ok) {
       const err = await res.json().catch(() => ({ message: res.statusText }));
       throw new Error(err.message || "Upload failed");
     }
-    return res.json();
+
+    // Backend returns an array; return the first item for single upload
+    const data = await res.json();
+    return Array.isArray(data) ? data[0] : data;
+  },
+
+  /** Upload multiple files at once. Returns array of created scenes. */
+  uploadBatch: async (
+    tenantId: string,
+    files: File[],
+    tenantSlug: string,
+    labels?: string[],
+  ) => {
+    const formData = new FormData();
+    for (const file of files) {
+      formData.append("files", file);
+    }
+    if (labels && labels.length > 0) {
+      for (const label of labels) {
+        formData.append("labels", label);
+      }
+    }
+
+    const res = await fetch(
+      `${BASE}/api/hero-scenes/${tenantId}?tenant=${encodeURIComponent(tenantSlug)}`,
+      {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      },
+    );
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: res.statusText }));
+      throw new Error(err.message || "Upload failed");
+    }
+
+    return res.json() as Promise<HeroScene[]>;
   },
 
   remove: (id: string) => del(`/api/hero-scenes/${id}`),

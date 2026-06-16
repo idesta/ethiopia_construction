@@ -25,13 +25,12 @@ router.get("/:tenantId", requireAuth, async (req: Request, res: Response) => {
 });
 
 // ── POST /api/hero-scenes/:tenantId ────────────────────────────────
-// Upload a new hero scene image/SVG.
-// Accepts: multipart/form-data { file, label? }
+// Upload one or more hero scene images/SVGs.
+// Accepts: multipart/form-data { files: File[], label? }
 router.post(
   "/:tenantId",
   requireAuth,
   async (req: Request, res: Response, next) => {
-    // Inject tenant (slug) and folder so the multer middleware saves to the right path
     try {
       const { rows } = await db.query(
         "SELECT slug FROM tenants WHERE id = $1",
@@ -49,39 +48,34 @@ router.post(
       next(err);
     }
   },
-  async (req: Request, res: Response, next) => {
-    // Enforce max scenes limit before accepting the file
-    try {
-      const { rows } = await db.query(
-        "SELECT COUNT(*) FROM hero_scenes WHERE tenant_id = $1",
-        [req.params.tenantId],
-      );
-      if (parseInt(rows[0].count, 10) >= MAX_SCENES) {
-        res
-          .status(400)
-          .json({ message: `Maximum ${MAX_SCENES} hero scenes allowed. Delete one first.` });
-        return;
-      }
-      next();
-    } catch (err) {
-      next(err);
-    }
-  },
   (req: Request, res: Response, next) => {
-    upload.single("file")(req, res, (err) => {
+    upload.array("files", 10)(req, res, (err) => {
       if (err) {
-        return res.status(400).json({ message: err.message || "Upload failed" });
+        return res
+          .status(400)
+          .json({ message: err.message || "Upload failed" });
       }
       next();
     });
   },
   async (req: Request, res: Response) => {
-    if (!req.file) {
-      res.status(400).json({ message: "No file uploaded" });
+    const files = req.files as Express.Multer.File[] | undefined;
+    if (!files || files.length === 0) {
+      res.status(400).json({ message: "No files uploaded" });
       return;
     }
 
-    // Resolve tenant slug for URL generation
+    // Optional per-file labels. Can be sent as multipart field `labels`
+    // (multiple occurrences) to match uploaded file order.
+    const labelsField = (req.body as any)?.labels as
+      | string
+      | string[]
+      | undefined;
+    const labelsFromRequest: string[] | undefined = (() => {
+      if (!labelsField) return undefined;
+      return Array.isArray(labelsField) ? labelsField : [labelsField];
+    })();
+
     try {
       const tenantResult = await db.query(
         "SELECT slug FROM tenants WHERE id = $1",
@@ -91,26 +85,56 @@ router.post(
         res.status(404).json({ message: "Tenant not found" });
         return;
       }
+      const slug = tenantResult.rows[0].slug;
 
-      const slug       = tenantResult.rows[0].slug;
-      const filePath   = path.relative(DATA_ROOT, req.file.path);
-      const publicUrl  = `/uploads/${slug}/hero-scenes/${req.file.filename}`;
-      const label      = (req.body.label || "").trim() || null;
+      // Count existing scenes and enforce max (check AFTER upload so we know file count)
+      const { rows: countRows } = await db.query(
+        "SELECT COUNT(*) FROM hero_scenes WHERE tenant_id = $1",
+        [req.params.tenantId],
+      );
+      const current = parseInt(countRows[0].count, 10);
+      if (current + files.length > MAX_SCENES) {
+        // Cleanup: remove uploaded files since we can't use them
+        for (const file of files) {
+          try {
+            fs.unlinkSync(file.path);
+          } catch {
+            /* ignore */
+          }
+        }
+        res.status(400).json({
+          message: `Only ${MAX_SCENES - current} slot(s) remaining, but ${files.length} file(s) uploaded. Delete some first.`,
+        });
+        return;
+      }
 
       // Get current max sort_order
       const { rows: orderRows } = await db.query(
         "SELECT COALESCE(MAX(sort_order), -1) AS max_order FROM hero_scenes WHERE tenant_id = $1",
         [req.params.tenantId],
       );
-      const sortOrder = parseInt(orderRows[0].max_order, 10) + 1;
+      let nextOrder = parseInt(orderRows[0].max_order, 10) + 1;
 
-      const { rows } = await db.query(
-        `INSERT INTO hero_scenes (tenant_id, url, file_path, label, sort_order)
-         VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-        [req.params.tenantId, publicUrl, filePath, label, sortOrder],
-      );
+      const created = [];
+      for (let idx = 0; idx < files.length; idx++) {
+        const file = files[idx];
+        const filePath = path.relative(DATA_ROOT, file.path);
+        const publicUrl = `/uploads/${slug}/hero-scenes/${file.filename}`;
 
-      res.status(201).json(rows[0]);
+        const label =
+          labelsFromRequest && labelsFromRequest[idx]
+            ? labelsFromRequest[idx]
+            : null;
+
+        const { rows } = await db.query(
+          `INSERT INTO hero_scenes (tenant_id, url, file_path, label, sort_order)
+           VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+          [req.params.tenantId, publicUrl, filePath, label, nextOrder++],
+        );
+        created.push(rows[0]);
+      }
+
+      res.status(201).json(created);
     } catch (err) {
       console.error("Hero scene upload failed:", err);
       res.status(500).json({ message: "Server error" });
