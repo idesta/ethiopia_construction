@@ -58,7 +58,12 @@ function fileFilter(
     "image/webp",
     "image/gif",
     "image/svg+xml",
+    // Lottie JSON
+    "application/json",
+    "application/*+json",
+    "text/json",
   ];
+
   if (allowed.includes(file.mimetype)) {
     cb(null, true);
   } else {
