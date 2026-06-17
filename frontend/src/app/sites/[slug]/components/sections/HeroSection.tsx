@@ -13,6 +13,7 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import { Tenant, HeroScene } from "../../types";
 import { heroStagger, heroChild } from "../ui/Motion";
 import { BUILTIN_SCENES } from "./BuiltinScenes";
+import { SceneContent } from "./SceneContent";
 
 interface HeroSectionProps {
   tenant: Tenant;
@@ -41,41 +42,6 @@ function buildScenes(heroScenes: HeroScene[] | undefined): SceneItem[] {
     label: s.label,
     Component: s.Component,
   }));
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   SCENE RENDERER — renders either an <img> or an SVG component
-   ═══════════════════════════════════════════════════════════════════ */
-function SceneContent({ scene, accent }: { scene: SceneItem; accent: string }) {
-  if (scene.type === "builtin") {
-    const Component = scene.Component;
-    return <Component a={accent} />;
-  }
-  // Uploaded image — render as <img> inside a wrapper that matches
-  // the SVG viewBox proportions
-  return (
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        overflow: "hidden",
-      }}
-    >
-      <img
-        src={scene.url}
-        alt={scene.label}
-        style={{
-          maxWidth: "80%",
-          maxHeight: "80%",
-          objectFit: "contain",
-          filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.5))",
-        }}
-      />
-    </div>
-  );
 }
 
 /* ═══════════════════════════════════════════════════════════════════
