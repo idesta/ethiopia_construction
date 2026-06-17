@@ -24,9 +24,8 @@ interface HeroSectionProps {
 /* ═══════════════════════════════════════════════════════════════════
    SCENE ITEM — either a built-in SVG component or an uploaded image
    ═══════════════════════════════════════════════════════════════════ */
-type SceneItem =
-  | { type: "builtin"; label: string; Component: React.FC<{ a: string }> }
-  | { type: "uploaded"; label: string; url: string };
+// Reuse the exact scene type shape used by SceneContent
+type SceneItem = Parameters<typeof SceneContent>[0]["scene"];
 
 function buildScenes(heroScenes: HeroScene[] | undefined): SceneItem[] {
   if (heroScenes && heroScenes.length > 0) {
