@@ -58,10 +58,13 @@ export function SceneContent({
           <LottiePlayer
             style={{ maxWidth: "80%", maxHeight: "80%" }}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            {...({ src: scene.url } as any)}
+            // lottie-react prop name varies by version; provide both.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            {...({ src: scene.url, animationUrl: scene.url } as any)}
 
             loop
             autoplay
+
           />
         )}
       </div>
