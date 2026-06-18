@@ -1,23 +1,52 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import dynamic from "next/dynamic";
+import React, { useEffect, useRef } from "react";
 import type { AnimationItem } from "lottie-web";
 
 type BuiltinScene =
   | { type: "builtin"; label: string; Component: React.FC<{ a: string }> }
   | { type: "uploaded"; label: string; url: string };
 
-const LottiePlayer = dynamic(
-  async () => {
-    const mod = await import("lottie-react");
-    return mod;
-  },
-  { ssr: false },
-);
-
 function isLottieUrl(url: string) {
   return url.toLowerCase().endsWith(".json");
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LOTTIE SCENE
+   ───────────────────────────────────────────────────────────────────
+   Plays a Lottie file straight through lottie-web's own SVG renderer.
+   We load it by `path` so the browser fetches + caches the json file
+   itself (as a normal static asset), instead of us pulling it into
+   the JS bundle. lottie-web is dynamically imported inside the
+   effect so nothing here ever touches the DOM during SSR.
+   ═══════════════════════════════════════════════════════════════════ */
+function LottieScene({ url }: { url: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const animRef = useRef<AnimationItem | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    import("lottie-web").then(({ default: lottie }) => {
+      if (cancelled || !containerRef.current) return;
+      animRef.current = lottie.loadAnimation({
+        container: containerRef.current,
+        renderer: "svg",
+        loop: true,
+        autoplay: true,
+        path: url,
+        rendererSettings: { preserveAspectRatio: "xMidYMid meet" },
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      animRef.current?.destroy();
+      animRef.current = null;
+    };
+  }, [url]);
+
+  return <div ref={containerRef} style={{ width: "80%", height: "80%" }} />;
 }
 
 export function SceneContent({
@@ -27,21 +56,14 @@ export function SceneContent({
   scene: BuiltinScene;
   accent: string;
 }) {
-  const [isMounted, setIsMounted] = useState(false);
-
-  React.useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   if (scene.type === "builtin") {
     const Component = scene.Component;
     return <Component a={accent} />;
   }
 
-  // Uploaded image OR lottie json
+  // Uploaded image OR lottie json — ".json" also covers the 6 built-in
+  // cinematic scenes from BuiltinLottieScenes.tsx, same shape, same path.
   if (isLottieUrl(scene.url)) {
-    // For lottie-react: use animationData OR animationUrl.
-    // Using animationData would require fetching+parsing; lottie-react supports animationUrl.
     return (
       <div
         style={{
@@ -53,20 +75,7 @@ export function SceneContent({
           overflow: "hidden",
         }}
       >
-        {/* lottie-react typings vary by version; use any to avoid TS friction */}
-        {isMounted && LottiePlayer && (
-          <LottiePlayer
-            style={{ maxWidth: "80%", maxHeight: "80%" }}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            // lottie-react prop name varies by version; provide both.
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            {...({ src: scene.url, animationUrl: scene.url } as any)}
-
-            loop
-            autoplay
-
-          />
-        )}
+        <LottieScene url={scene.url} />
       </div>
     );
   }

@@ -1,0 +1,155 @@
+[1mdiff --git a/frontend/src/app/sites/[slug]/components/sections/HeroSection.tsx b/frontend/src/app/sites/[slug]/components/sections/HeroSection.tsx[m
+[1mindex 89ef0a93..089c9393 100644[m
+[1m--- a/frontend/src/app/sites/[slug]/components/sections/HeroSection.tsx[m
+[1m+++ b/frontend/src/app/sites/[slug]/components/sections/HeroSection.tsx[m
+[36m@@ -13,6 +13,7 @@[m [mimport { useRef, useEffect, useState, useCallback } from "react";[m
+ import { Tenant, HeroScene } from "../../types";[m
+ import { heroStagger, heroChild } from "../ui/Motion";[m
+ import { BUILTIN_SCENES } from "./BuiltinScenes";[m
+[32m+[m[32mimport { BUILTIN_LOTTIE_SCENES } from "./BuiltinLottieScenes";[m
+ import { SceneContent } from "./SceneContent";[m
+ [m
+ interface HeroSectionProps {[m
+[36m@@ -35,12 +36,21 @@[m [mfunction buildScenes(heroScenes: HeroScene[] | undefined): SceneItem[] {[m
+       url: s.url,[m
+     }));[m
+   }[m
+[31m-  // Fall back to built-in SVGs[m
+[31m-  return BUILTIN_SCENES.map((s) => ({[m
+[31m-    type: "builtin" as const,[m
+[31m-    label: s.label,[m
+[31m-    Component: s.Component,[m
+[31m-  }));[m
+[32m+[m[32m  // Fall back to built-ins: hand-drawn SVG scenes + cinematic Lottie scenes.[m
+[32m+[m[32m  // The Lottie ones reuse the "uploaded" shape on purpose — SceneContent[m
+[32m+[m[32m  // only cares whether a scene is a component or a url, not who provided it.[m
+[32m+[m[32m  return [[m
+[32m+[m[32m    ...BUILTIN_SCENES.map((s) => ({[m
+[32m+[m[32m      type: "builtin" as const,[m
+[32m+[m[32m      label: s.label,[m
+[32m+[m[32m      Component: s.Component,[m
+[32m+[m[32m    })),[m
+[32m+[m[32m    ...BUILTIN_LOTTIE_SCENES.map((s) => ({[m
+[32m+[m[32m      type: "uploaded" as const,[m
+[32m+[m[32m      label: s.label,[m
+[32m+[m[32m      url: s.url,[m
+[32m+[m[32m    })),[m
+[32m+[m[32m  ];[m
+ }[m
+ [m
+ /* ═══════════════════════════════════════════════════════════════════[m
+[1mdiff --git a/frontend/src/app/sites/[slug]/components/sections/SceneContent.tsx b/frontend/src/app/sites/[slug]/components/sections/SceneContent.tsx[m
+[1mindex 04b94baa..903daef5 100644[m
+[1m--- a/frontend/src/app/sites/[slug]/components/sections/SceneContent.tsx[m
+[1m+++ b/frontend/src/app/sites/[slug]/components/sections/SceneContent.tsx[m
+[36m@@ -1,25 +1,54 @@[m
+ "use client";[m
+ [m
+[31m-import React, { useMemo, useState } from "react";[m
+[31m-import dynamic from "next/dynamic";[m
+[32m+[m[32mimport React, { useEffect, useRef } from "react";[m
+ import type { AnimationItem } from "lottie-web";[m
+ [m
+ type BuiltinScene =[m
+   | { type: "builtin"; label: string; Component: React.FC<{ a: string }> }[m
+   | { type: "uploaded"; label: string; url: string };[m
+ [m
+[31m-const LottiePlayer = dynamic([m
+[31m-  async () => {[m
+[31m-    const mod = await import("lottie-react");[m
+[31m-    return mod;[m
+[31m-  },[m
+[31m-  { ssr: false },[m
+[31m-);[m
+[31m-[m
+ function isLottieUrl(url: string) {[m
+   return url.toLowerCase().endsWith(".json");[m
+ }[m
+ [m
+[32m+[m[32m/* ═══════════════════════════════════════════════════════════════════[m
+[32m+[m[32m   LOTTIE SCENE[m
+[32m+[m[32m   ───────────────────────────────────────────────────────────────────[m
+[32m+[m[32m   Plays a Lottie file straight through lottie-web's own SVG renderer.[m
+[32m+[m[32m   We load it by `path` so the browser fetches + caches the json file[m
+[32m+[m[32m   itself (as a normal static asset), instead of us pulling it into[m
+[32m+[m[32m   the JS bundle. lottie-web is dynamically imported inside the[m
+[32m+[m[32m   effect so nothing here ever touches the DOM during SSR.[m
+[32m+[m[32m   ═══════════════════════════════════════════════════════════════════ */[m
+[32m+[m[32mfunction LottieScene({ url }: { url: string }) {[m
+[32m+[m[32m  const containerRef = useRef<HTMLDivElement>(null);[m
+[32m+[m[32m  const animRef = useRef<AnimationItem | null>(null);[m
+[32m+[m
+[32m+[m[32m  useEffect(() => {[m
+[32m+[m[32m    let cancelled = false;[m
+[32m+[m
+[32m+[m[32m    import("lottie-web").then(({ default: lottie }) => {[m
+[32m+[m[32m      if (cancelled || !containerRef.current) return;[m
+[32m+[m[32m      animRef.current = lottie.loadAnimation({[m
+[32m+[m[32m        container: containerRef.current,[m
+[32m+[m[32m        renderer: "svg",[m
+[32m+[m[32m        loop: true,[m
+[32m+[m[32m        autoplay: true,[m
+[32m+[m[32m        path: url,[m
+[32m+[m[32m        rendererSettings: { preserveAspectRatio: "xMidYMid meet" },[m
+[32m+[m[32m      });[m
+[32m+[m[32m    });[m
+[32m+[m
+[32m+[m[32m    return () => {[m
+[32m+[m[32m      cancelled = true;[m
+[32m+[m[32m      animRef.current?.destroy();[m
+[32m+[m[32m      animRef.current = null;[m
+[32m+[m[32m    };[m
+[32m+[m[32m  }, [url]);[m
+[32m+[m
+[32m+[m[32m  return <div ref={containerRef} style={{ width: "80%", height: "80%" }} />;[m
+[32m+[m[32m}[m
+[32m+[m
+ export function SceneContent({[m
+   scene,[m
+   accent,[m
+[36m@@ -27,21 +56,14 @@[m [mexport function SceneContent({[m
+   scene: BuiltinScene;[m
+   accent: string;[m
+ }) {[m
+[31m-  const [isMounted, setIsMounted] = useState(false);[m
+[31m-[m
+[31m-  React.useEffect(() => {[m
+[31m-    setIsMounted(true);[m
+[31m-  }, []);[m
+[31m-[m
+   if (scene.type === "builtin") {[m
+     const Component = scene.Component;[m
+     return <Component a={accent} />;[m
+   }[m
+ [m
+[31m-  // Uploaded image OR lottie json[m
+[32m+[m[32m  // Uploaded image OR lottie json — ".json" also covers the 6 built-in[m
+[32m+[m[32m  // cinematic scenes from BuiltinLottieScenes.tsx, same shape, same path.[m
+   if (isLottieUrl(scene.url)) {[m
+[31m-    // For lottie-react: use animationData OR animationUrl.[m
+[31m-    // Using animationData would require fetching+parsing; lottie-react supports animationUrl.[m
+     return ([m
+       <div[m
+         style={{[m
+[36m@@ -53,20 +75,7 @@[m [mexport function SceneContent({[m
+           overflow: "hidden",[m
+         }}[m
+       >[m
+[31m-        {/* lottie-react typings vary by version; use any to avoid TS friction */}[m
+[31m-        {isMounted && LottiePlayer && ([m
+[31m-          <LottiePlayer[m
+[31m-            style={{ maxWidth: "80%", maxHeight: "80%" }}[m
+[31m-            // eslint-disable-next-line @typescript-eslint/no-explicit-any[m
+[31m-            // lottie-react prop name varies by version; provide both.[m
+[31m-            // eslint-disable-next-line @typescript-eslint/no-explicit-any[m
+[31m-            {...({ src: scene.url, animationUrl: scene.url } as any)}[m
+[31m-[m
+[31m-            loop[m
+[31m-            autoplay[m
+[31m-[m
+[31m-          />[m
+[31m-        )}[m
+[32m+[m[32m        <LottieScene url={scene.url} />[m
+       </div>[m
+     );[m
+   }[m

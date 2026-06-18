@@ -13,6 +13,7 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import { Tenant, HeroScene } from "../../types";
 import { heroStagger, heroChild } from "../ui/Motion";
 import { BUILTIN_SCENES } from "./BuiltinScenes";
+import { BUILTIN_LOTTIE_SCENES } from "./BuiltinLottieScenes";
 import { SceneContent } from "./SceneContent";
 
 interface HeroSectionProps {
@@ -35,12 +36,21 @@ function buildScenes(heroScenes: HeroScene[] | undefined): SceneItem[] {
       url: s.url,
     }));
   }
-  // Fall back to built-in SVGs
-  return BUILTIN_SCENES.map((s) => ({
-    type: "builtin" as const,
-    label: s.label,
-    Component: s.Component,
-  }));
+  // Fall back to built-ins: hand-drawn SVG scenes + cinematic Lottie scenes.
+  // The Lottie ones reuse the "uploaded" shape on purpose — SceneContent
+  // only cares whether a scene is a component or a url, not who provided it.
+  return [
+    ...BUILTIN_SCENES.map((s) => ({
+      type: "builtin" as const,
+      label: s.label,
+      Component: s.Component,
+    })),
+    ...BUILTIN_LOTTIE_SCENES.map((s) => ({
+      type: "uploaded" as const,
+      label: s.label,
+      url: s.url,
+    })),
+  ];
 }
 
 /* ═══════════════════════════════════════════════════════════════════
