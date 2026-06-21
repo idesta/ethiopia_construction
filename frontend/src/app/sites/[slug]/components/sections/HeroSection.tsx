@@ -40,15 +40,15 @@ function buildScenes(heroScenes: HeroScene[] | undefined): SceneItem[] {
   // The Lottie ones reuse the "uploaded" shape on purpose — SceneContent
   // only cares whether a scene is a component or a url, not who provided it.
   return [
-    ...BUILTIN_SCENES.map((s) => ({
-      type: "builtin" as const,
-      label: s.label,
-      Component: s.Component,
-    })),
     ...BUILTIN_LOTTIE_SCENES.map((s) => ({
       type: "uploaded" as const,
       label: s.label,
       url: s.url,
+    })),
+    ...BUILTIN_SCENES.map((s) => ({
+      type: "builtin" as const,
+      label: s.label,
+      Component: s.Component,
     })),
   ];
 }

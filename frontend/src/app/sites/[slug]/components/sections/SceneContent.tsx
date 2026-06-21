@@ -46,7 +46,7 @@ function LottieScene({ url }: { url: string }) {
     };
   }, [url]);
 
-  return <div ref={containerRef} style={{ width: "80%", height: "80%" }} />;
+  return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
 }
 
 export function SceneContent({
