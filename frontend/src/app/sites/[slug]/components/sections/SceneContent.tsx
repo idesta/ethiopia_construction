@@ -20,7 +20,7 @@ function isLottieUrl(url: string) {
    the JS bundle. lottie-web is dynamically imported inside the
    effect so nothing here ever touches the DOM during SSR.
    ═══════════════════════════════════════════════════════════════════ */
-function LottieScene({ url }: { url: string }) {
+function LottieScene({ url, accent }: { url: string; accent: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const animRef = useRef<AnimationItem | null>(null);
 
@@ -46,7 +46,25 @@ function LottieScene({ url }: { url: string }) {
     };
   }, [url]);
 
-  return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
+  // isolation:"isolate" scopes the blend mode to just these two layers,
+  // so the tint doesn't also blend with whatever sits behind the scene.
+  return (
+    <div style={{ position: "relative", width: "100%", height: "100%", isolation: "isolate" }}>
+      <div
+        ref={containerRef}
+        style={{ width: "100%", height: "100%", filter: "grayscale(1) contrast(1.1)" }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundColor: accent,
+          mixBlendMode: "color",
+          pointerEvents: "none",
+        }}
+      />
+    </div>
+  );
 }
 
 export function SceneContent({
@@ -75,7 +93,7 @@ export function SceneContent({
           overflow: "hidden",
         }}
       >
-        <LottieScene url={scene.url} />
+        <LottieScene url={scene.url} accent={accent} />
       </div>
     );
   }
