@@ -20,6 +20,13 @@ function isLottieUrl(url: string) {
    the JS bundle. lottie-web is dynamically imported inside the
    effect so nothing here ever touches the DOM during SSR.
    ═══════════════════════════════════════════════════════════════════ */
+
+// Multiple stops (rather than one hard edge) make the falloff read as a
+// smooth gradient instead of a circle suddenly appearing — opaque core,
+// then a long, gradual fade out to fully transparent at the very edge.
+const VIGNETTE_MASK =
+  "radial-gradient(ellipse at center, black 25%, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.5) 65%, rgba(0,0,0,0.15) 85%, transparent 100%)";
+
 function LottieScene({ url, accent }: { url: string; accent: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const animRef = useRef<AnimationItem | null>(null);
@@ -49,10 +56,23 @@ function LottieScene({ url, accent }: { url: string; accent: string }) {
   // isolation:"isolate" scopes the blend mode to just these two layers,
   // so the tint doesn't also blend with whatever sits behind the scene.
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%", isolation: "isolate" }}>
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        isolation: "isolate",
+        WebkitMaskImage: VIGNETTE_MASK,
+        maskImage: VIGNETTE_MASK,
+      }}
+    >
       <div
         ref={containerRef}
-        style={{ width: "100%", height: "100%", filter: "grayscale(1) contrast(1.1)" }}
+        style={{
+          width: "100%",
+          height: "100%",
+          filter: "grayscale(1) contrast(1.1)",
+        }}
       />
       <div
         style={{
