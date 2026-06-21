@@ -436,6 +436,7 @@ export function HeroSection({ tenant, accent, onScrollTo }: HeroSectionProps) {
   const sceneY = useTransform(scrollYProgress, [0, 1], ["0%", "-18%"]);
   const sceneOp = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
   const springSceneY = useSpring(sceneY, { stiffness: 50, damping: 18 });
+  const parallaxY = useTransform(scrollYProgress, [0, 1], [0, 140]);
 
   const onMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     if (shouldReduce) return;
@@ -479,6 +480,16 @@ export function HeroSection({ tenant, accent, onScrollTo }: HeroSectionProps) {
       />
       <div className="hero-grain" />
       <div className="hero-grid" />
+      <motion.div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          inset: "-150px 0",
+          backgroundImage: `radial-gradient(${accent}26 1px, transparent 1px)`,
+          backgroundSize: "34px 34px",
+          y: parallaxY,
+        }}
+      />
       <Particles accent={accent} />
 
       {/* ── SPLIT LAYOUT ── */}

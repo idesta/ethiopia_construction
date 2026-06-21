@@ -46,11 +46,7 @@ export function StatsSection({
     : 14;
 
   return (
-    <div
-      ref={ref}
-      className="stats-section"
-      style={{ background: accent }}
-    >
+    <div ref={ref} className="stats-section" style={{ background: accent }}>
       <motion.div
         className="stats-grid"
         variants={staggerContainer}

@@ -82,3 +82,43 @@ export const heroChild: Variants = {
     transition: { duration: 0.75, ease: [0.16, 1, 0.3, 1] },
   },
 };
+
+/* ── Depth reveal (new default section entrance) ──────── */
+/* Fade + rise + a restrained 3D tilt — enough to read as       */
+/* "depth" without fighting legibility of stats/cards/text.     */
+export const revealDepth: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 28,
+    scale: 0.96,
+    rotateX: 6,
+    transformPerspective: 1000,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    rotateX: 0,
+    transformPerspective: 1000,
+    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+/* ── Tilt reveal (reserved for one or two standout moments) ── */
+export const revealTilt: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 50,
+    scale: 0.88,
+    rotateX: 22,
+    transformPerspective: 1000,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    rotateX: 0,
+    transformPerspective: 1000,
+    transition: { duration: 0.85, ease: [0.16, 1, 0.3, 1] },
+  },
+};
