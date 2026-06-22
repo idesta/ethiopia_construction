@@ -12,7 +12,7 @@ function StatItem({
   suffix,
   label,
   start,
-  duration = 2000,
+  duration = 2001,
 }: {
   value: number;
   suffix: string;
