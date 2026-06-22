@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useInView } from "../../hooks/useInView";
 import { useCounter } from "../../hooks/useCounter";
 import { Tenant } from "../../types";
-import { staggerContainer, scaleIn } from "../ui/Motion";
+import { staggerContainer, revealTilt } from "../ui/Motion";
 import { DiamondIcon } from "../ui/EthiopianGeometric";
 
 function StatItem({
@@ -22,7 +22,7 @@ function StatItem({
 }) {
   const count = useCounter(value, duration, start);
   return (
-    <motion.div className="stat-item" variants={scaleIn}>
+    <motion.div className="stat-item" variants={revealTilt}>
       <DiamondIcon accent="#0d0e11" size={12} />
       <div className="stat-number">
         {count}
