@@ -17,7 +17,7 @@ export function TeamSection({
   if (team.length === 0) return null;
 
   return (
-    <FadeSection>
+    <FadeSection variant="scrub">
       <section id="team" className="team-section">
         <div className="section-inner">
           <SectionHeader
@@ -38,7 +38,11 @@ export function TeamSection({
               <motion.div className="team-card" key={m.id} variants={scaleIn}>
                 <div className="team-photo-wrap">
                   {m.photo_url ? (
-                    <img src={m.photo_url} alt={m.name} className="team-photo" />
+                    <img
+                      src={m.photo_url}
+                      alt={m.name}
+                      className="team-photo"
+                    />
                   ) : (
                     <div className="team-avatar" style={{ color: accent }}>
                       {m.name.charAt(0)}

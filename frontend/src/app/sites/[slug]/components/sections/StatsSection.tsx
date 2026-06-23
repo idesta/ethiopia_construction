@@ -4,15 +4,16 @@ import { motion } from "framer-motion";
 import { useInView } from "../../hooks/useInView";
 import { useCounter } from "../../hooks/useCounter";
 import { Tenant } from "../../types";
-import { staggerContainer, revealTilt } from "../ui/Motion";
+import { staggerContainer, scaleIn } from "../ui/Motion";
 import { DiamondIcon } from "../ui/EthiopianGeometric";
+import { FadeSection } from "../ui/FadeSection";
 
 function StatItem({
   value,
   suffix,
   label,
   start,
-  duration = 2001,
+  duration = 2000,
 }: {
   value: number;
   suffix: string;
@@ -22,7 +23,7 @@ function StatItem({
 }) {
   const count = useCounter(value, duration, start);
   return (
-    <motion.div className="stat-item" variants={revealTilt}>
+    <motion.div className="stat-item" variants={scaleIn}>
       <DiamondIcon accent="#0d0e11" size={12} />
       <div className="stat-number">
         {count}
@@ -40,49 +41,56 @@ export function StatsSection({
   tenant: Tenant;
   accent: string;
 }) {
+  // Drives the count-up — separate from the scroll-scrub below on
+  // purpose. The numbers should only ever count up once; re-running
+  // them every time someone scrolls past would read as glitchy rather
+  // than satisfying. The outer FadeSection only scrubs the fade/rise of
+  // the section itself, which is happy to run backward and forward.
   const { ref, inView } = useInView(0.2);
   const yearsExp = tenant.founded_year
     ? new Date().getFullYear() - tenant.founded_year
     : 14;
 
   return (
-    <div ref={ref} className="stats-section" style={{ background: accent }}>
-      <motion.div
-        className="stats-grid"
-        variants={staggerContainer}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-50px" }}
-      >
-        <StatItem
-          value={yearsExp}
-          suffix="+"
-          label="Years of Experience"
-          start={inView}
-          duration={2000}
-        />
-        <StatItem
-          value={120}
-          suffix="+"
-          label="Projects Completed"
-          start={inView}
-          duration={2200}
-        />
-        <StatItem
-          value={98}
-          suffix="%"
-          label="Client Satisfaction"
-          start={inView}
-          duration={1800}
-        />
-        <StatItem
-          value={45}
-          suffix="+"
-          label="Expert Engineers"
-          start={inView}
-          duration={2400}
-        />
-      </motion.div>
-    </div>
+    <FadeSection variant="scrub">
+      <div ref={ref} className="stats-section" style={{ background: accent }}>
+        <motion.div
+          className="stats-grid"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+        >
+          <StatItem
+            value={yearsExp}
+            suffix="+"
+            label="Years of Experience"
+            start={inView}
+            duration={2000}
+          />
+          <StatItem
+            value={120}
+            suffix="+"
+            label="Projects Completed"
+            start={inView}
+            duration={2200}
+          />
+          <StatItem
+            value={98}
+            suffix="%"
+            label="Client Satisfaction"
+            start={inView}
+            duration={1800}
+          />
+          <StatItem
+            value={45}
+            suffix="+"
+            label="Expert Engineers"
+            start={inView}
+            duration={2400}
+          />
+        </motion.div>
+      </div>
+    </FadeSection>
   );
 }

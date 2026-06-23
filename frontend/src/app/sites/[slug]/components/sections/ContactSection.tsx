@@ -93,7 +93,7 @@ export function ContactSection({
   }
 
   return (
-    <FadeSection>
+    <FadeSection variant="scrub-tilt">
       <section id="contact" className="contact-section">
         <div className="section-inner">
           <SectionHeader
@@ -185,9 +185,7 @@ export function ContactSection({
                   <div className="form-state-icon">
                     <CheckIcon size={34} />
                   </div>
-                  <h3 className="form-state-title">
-                    Message Sent!
-                  </h3>
+                  <h3 className="form-state-title">Message Sent!</h3>
                   <p>
                     {successMsg ||
                       "Your enquiry has been delivered. The team will get back to you shortly."}

@@ -140,7 +140,11 @@ export default function TenantPage({
       <main>
         <HeroSection tenant={tenant} accent={accent} onScrollTo={scrollTo} />
         <StatsSection tenant={tenant} accent={accent} />
-        <ServicesSection services={services} accent={accent} />
+        <ServicesSection
+          services={services}
+          accent={accent}
+          onScrollTo={scrollTo}
+        />
         <ProjectsSection projects={projects} accent={accent} />
         <TeamSection team={team} accent={accent} />
         <ContactSection
