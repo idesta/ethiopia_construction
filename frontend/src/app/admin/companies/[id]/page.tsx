@@ -211,6 +211,17 @@ export default function CompanyEditorPage() {
                 >
                   🎬 Hero Scenes
                 </button>
+
+                {/* Add the new button here: */}
+                <button
+                  className="btn btn-secondary btn-sm"
+                  onClick={() =>
+                    router.push(`/admin/companies/${params.id}/hero-slides`)
+                  }
+                >
+                  🎞️ Hero Slides
+                </button>
+
                 <button
                   className="btn btn-ghost btn-sm"
                   onClick={() => window.open(`/sites/${tenant.slug}`, "_blank")}
