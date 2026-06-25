@@ -47,10 +47,30 @@ router.get("/slide/:id", auth_1.requireAuth, async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 });
-// ── GET /api/hero-slides/:tenantId ─────────────────────────────────
+// ── GET /api/hero-slides/:tenantId (or :id for backward compat) ────
+// Some admin UI paths may request hero slide by UUID at
+// /api/hero-slides/:id. This handler supports both:
+// - UUID => SELECT * FROM hero_slides WHERE id = $1
+// - otherwise => SELECT * FROM hero_slides WHERE tenant_id = $1 ORDER BY...
 router.get("/:tenantId", auth_1.requireAuth, async (req, res) => {
+    const tenantOrId = req.params.tenantId;
+    // UUID v1-v5 heuristic
+    // Express types allow string | string[]. Normalize to string.
+    const tenantOrIdStr = Array.isArray(tenantOrId)
+        ? tenantOrId[0] || ""
+        : tenantOrId;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tenantOrIdStr);
     try {
-        const { rows } = await client_1.db.query("SELECT * FROM hero_slides WHERE tenant_id = $1 ORDER BY sort_order, created_at", [req.params.tenantId]);
+        if (isUuid) {
+            const { rows } = await client_1.db.query("SELECT * FROM hero_slides WHERE id = $1", [tenantOrId]);
+            if (!rows[0]) {
+                res.status(404).json({ message: "Not found" });
+                return;
+            }
+            res.json(rows[0]);
+            return;
+        }
+        const { rows } = await client_1.db.query("SELECT * FROM hero_slides WHERE tenant_id = $1 ORDER BY sort_order, created_at", [tenantOrId]);
         res.json(rows);
     }
     catch (err) {
