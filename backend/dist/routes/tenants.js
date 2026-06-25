@@ -31,14 +31,13 @@ router.get("/slug/:slug", async (req, res) => {
         }
         const tenant = rows[0];
         // Fetch related data in parallel
-        const [contacts, projects, teamRows, services, heroScenes] = await Promise.all([
+        const [contacts, projects, teamRows, services, heroScenes, heroSlides] = await Promise.all([
             client_1.db.query("SELECT * FROM contacts WHERE tenant_id = $1", [tenant.id]),
             client_1.db.query("SELECT * FROM projects WHERE tenant_id = $1 ORDER BY sort_order", [tenant.id]),
-            client_1.db.query("SELECT * FROM team WHERE tenant_id = $1 ORDER BY sort_order", [
-                tenant.id,
-            ]),
+            client_1.db.query("SELECT * FROM team WHERE tenant_id = $1 ORDER BY sort_order", [tenant.id]),
             client_1.db.query("SELECT * FROM services WHERE tenant_id = $1 ORDER BY sort_order", [tenant.id]),
             client_1.db.query("SELECT * FROM hero_scenes WHERE tenant_id = $1 ORDER BY sort_order, created_at", [tenant.id]),
+            client_1.db.query("SELECT * FROM hero_slides WHERE tenant_id = $1 ORDER BY sort_order, created_at", [tenant.id]),
         ]);
         res.json({
             ...tenant,
@@ -47,6 +46,7 @@ router.get("/slug/:slug", async (req, res) => {
             team: teamRows.rows,
             services: services.rows,
             hero_scenes: heroScenes.rows,
+            hero_slides: heroSlides.rows,
         });
     }
     catch (err) {
@@ -65,14 +65,13 @@ router.get("/:id", auth_1.requireAuth, async (req, res) => {
             return;
         }
         const tenant = rows[0];
-        const [contacts, projects, teamRows, services, heroScenes] = await Promise.all([
+        const [contacts, projects, teamRows, services, heroScenes, heroSlides] = await Promise.all([
             client_1.db.query("SELECT * FROM contacts WHERE tenant_id = $1", [tenant.id]),
             client_1.db.query("SELECT * FROM projects WHERE tenant_id = $1 ORDER BY sort_order", [tenant.id]),
-            client_1.db.query("SELECT * FROM team WHERE tenant_id = $1 ORDER BY sort_order", [
-                tenant.id,
-            ]),
+            client_1.db.query("SELECT * FROM team WHERE tenant_id = $1 ORDER BY sort_order", [tenant.id]),
             client_1.db.query("SELECT * FROM services WHERE tenant_id = $1 ORDER BY sort_order", [tenant.id]),
             client_1.db.query("SELECT * FROM hero_scenes WHERE tenant_id = $1 ORDER BY sort_order, created_at", [tenant.id]),
+            client_1.db.query("SELECT * FROM hero_slides WHERE tenant_id = $1 ORDER BY sort_order, created_at", [tenant.id]),
         ]);
         res.json({
             ...tenant,
@@ -81,6 +80,7 @@ router.get("/:id", auth_1.requireAuth, async (req, res) => {
             team: teamRows.rows,
             services: services.rows,
             hero_scenes: heroScenes.rows,
+            hero_slides: heroSlides.rows,
         });
     }
     catch (err) {
