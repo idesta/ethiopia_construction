@@ -35,24 +35,30 @@ router.get("/slug/:slug", async (req: Request, res: Response) => {
     const tenant = rows[0];
 
     // Fetch related data in parallel
-    const [contacts, projects, teamRows, services, heroScenes] = await Promise.all([
-      db.query("SELECT * FROM contacts WHERE tenant_id = $1", [tenant.id]),
-      db.query(
-        "SELECT * FROM projects WHERE tenant_id = $1 ORDER BY sort_order",
-        [tenant.id],
-      ),
-      db.query("SELECT * FROM team WHERE tenant_id = $1 ORDER BY sort_order", [
-        tenant.id,
-      ]),
-      db.query(
-        "SELECT * FROM services WHERE tenant_id = $1 ORDER BY sort_order",
-        [tenant.id],
-      ),
-      db.query(
-        "SELECT * FROM hero_scenes WHERE tenant_id = $1 ORDER BY sort_order, created_at",
-        [tenant.id],
-      ),
-    ]);
+    const [contacts, projects, teamRows, services, heroScenes, heroSlides] =
+      await Promise.all([
+        db.query("SELECT * FROM contacts WHERE tenant_id = $1", [tenant.id]),
+        db.query(
+          "SELECT * FROM projects WHERE tenant_id = $1 ORDER BY sort_order",
+          [tenant.id],
+        ),
+        db.query(
+          "SELECT * FROM team WHERE tenant_id = $1 ORDER BY sort_order",
+          [tenant.id],
+        ),
+        db.query(
+          "SELECT * FROM services WHERE tenant_id = $1 ORDER BY sort_order",
+          [tenant.id],
+        ),
+        db.query(
+          "SELECT * FROM hero_scenes WHERE tenant_id = $1 ORDER BY sort_order, created_at",
+          [tenant.id],
+        ),
+        db.query(
+          "SELECT * FROM hero_slides WHERE tenant_id = $1 ORDER BY sort_order, created_at",
+          [tenant.id],
+        ),
+      ]);
 
     res.json({
       ...tenant,
@@ -61,6 +67,7 @@ router.get("/slug/:slug", async (req: Request, res: Response) => {
       team: teamRows.rows,
       services: services.rows,
       hero_scenes: heroScenes.rows,
+      hero_slides: heroSlides.rows,
     });
   } catch (err) {
     console.error(err);
@@ -80,24 +87,30 @@ router.get("/:id", requireAuth, async (req: Request, res: Response) => {
     }
 
     const tenant = rows[0];
-    const [contacts, projects, teamRows, services, heroScenes] = await Promise.all([
-      db.query("SELECT * FROM contacts WHERE tenant_id = $1", [tenant.id]),
-      db.query(
-        "SELECT * FROM projects WHERE tenant_id = $1 ORDER BY sort_order",
-        [tenant.id],
-      ),
-      db.query("SELECT * FROM team WHERE tenant_id = $1 ORDER BY sort_order", [
-        tenant.id,
-      ]),
-      db.query(
-        "SELECT * FROM services WHERE tenant_id = $1 ORDER BY sort_order",
-        [tenant.id],
-      ),
-      db.query(
-        "SELECT * FROM hero_scenes WHERE tenant_id = $1 ORDER BY sort_order, created_at",
-        [tenant.id],
-      ),
-    ]);
+    const [contacts, projects, teamRows, services, heroScenes, heroSlides] =
+      await Promise.all([
+        db.query("SELECT * FROM contacts WHERE tenant_id = $1", [tenant.id]),
+        db.query(
+          "SELECT * FROM projects WHERE tenant_id = $1 ORDER BY sort_order",
+          [tenant.id],
+        ),
+        db.query(
+          "SELECT * FROM team WHERE tenant_id = $1 ORDER BY sort_order",
+          [tenant.id],
+        ),
+        db.query(
+          "SELECT * FROM services WHERE tenant_id = $1 ORDER BY sort_order",
+          [tenant.id],
+        ),
+        db.query(
+          "SELECT * FROM hero_scenes WHERE tenant_id = $1 ORDER BY sort_order, created_at",
+          [tenant.id],
+        ),
+        db.query(
+          "SELECT * FROM hero_slides WHERE tenant_id = $1 ORDER BY sort_order, created_at",
+          [tenant.id],
+        ),
+      ]);
 
     res.json({
       ...tenant,
@@ -106,6 +119,7 @@ router.get("/:id", requireAuth, async (req: Request, res: Response) => {
       team: teamRows.rows,
       services: services.rows,
       hero_scenes: heroScenes.rows,
+      hero_slides: heroSlides.rows,
     });
   } catch (err) {
     console.error(err);

@@ -211,12 +211,46 @@ export const heroScenes = {
     }),
 };
 
+export const heroSlides = {
+  list: (tenantId: string) => get<HeroSlide[]>(`/api/hero-slides/${tenantId}`),
+
+  create: (tenantId: string, data: Partial<HeroSlide>) =>
+    post<HeroSlide>(`/api/hero-slides/${tenantId}`, data),
+
+  update: (id: string, data: Partial<HeroSlide>) =>
+    put<HeroSlide>(`/api/hero-slides/${id}`, data),
+
+  remove: (id: string) => del(`/api/hero-slides/${id}`),
+
+  reorder: (tenantId: string, order: string[]) =>
+    request<{ message: string }>(`/api/hero-slides/${tenantId}/reorder`, {
+      method: "PATCH",
+      body: JSON.stringify({ order }),
+    }),
+};
+
 export interface HeroScene {
   id: string;
   tenant_id: string;
   url: string;
   file_path: string;
   label: string | null;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface HeroSlide {
+  id: string;
+  tenant_id: string;
+  headline: string;
+  tagline: string;
+  cta_label: string;
+  cta_target: string;
+  layout: string;
+  media_type: string;
+  media_ref: string | null;
+  poster_url: string | null;
+  accent_override: string | null;
   sort_order: number;
   created_at: string;
 }

@@ -1,0 +1,213 @@
+import { Router, Request, Response } from "express";
+import path from "path";
+import fs from "fs";
+import { db } from "../db/client";
+import { requireAuth } from "../middleware/auth";
+
+const router = Router();
+const DATA_ROOT = process.env.UPLOAD_PATH || "/mnt/data/uploads";
+
+const ALLOWED_LAYOUTS = ["split", "full-bleed"];
+const ALLOWED_MEDIA_TYPES = ["builtin_scene", "uploaded"];
+
+// Mirrors the relativePath/publicUrl relationship in routes/upload.ts
+// (relativePath = path.relative(DATA_ROOT, file.path), publicUrl =
+// `/uploads/${tenant}/${folder}/${filename}`) — stripping "/uploads/"
+// off a stored media_ref recovers the same relative path, so there's
+// no need for hero_slides to carry its own separate file_path column.
+function removeUploadedFile(mediaRef: string | null | undefined) {
+  if (!mediaRef) return;
+  const fullPath = path.join(DATA_ROOT, mediaRef.replace(/^\/uploads\//, ""));
+  if (fullPath.startsWith(DATA_ROOT) && fs.existsSync(fullPath)) {
+    try {
+      fs.unlinkSync(fullPath);
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
+// ── GET /api/hero-slides/:tenantId ─────────────────────────────────
+router.get("/:tenantId", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { rows } = await db.query(
+      "SELECT * FROM hero_slides WHERE tenant_id = $1 ORDER BY sort_order, created_at",
+      [req.params.tenantId],
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ── POST /api/hero-slides/:tenantId ────────────────────────────────
+// Plain JSON, same shape as projects/team/services. For media_type
+// 'uploaded', the admin uploads the file via the existing generic
+// POST /api/upload first and sends the resulting URL as media_ref —
+// exactly how project cover photos and team photos already work.
+router.post("/:tenantId", requireAuth, async (req: Request, res: Response) => {
+  const body = req.body || {};
+  if (!body.headline) {
+    res.status(400).json({ message: "Headline is required" });
+    return;
+  }
+
+  const layout = ALLOWED_LAYOUTS.includes(body.layout) ? body.layout : "split";
+  const mediaType = ALLOWED_MEDIA_TYPES.includes(body.media_type)
+    ? body.media_type
+    : "builtin_scene";
+
+  try {
+    const { rows: orderRows } = await db.query(
+      "SELECT COALESCE(MAX(sort_order), -1) AS max_order FROM hero_slides WHERE tenant_id = $1",
+      [req.params.tenantId],
+    );
+    const nextOrder = parseInt(orderRows[0].max_order, 10) + 1;
+
+    const { rows } = await db.query(
+      `INSERT INTO hero_slides
+         (tenant_id, headline, tagline, cta_label, cta_target,
+          layout, media_type, media_ref, poster_url, accent_override, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       RETURNING *`,
+      [
+        req.params.tenantId,
+        body.headline,
+        body.tagline || null,
+        body.cta_label || "View Our Work",
+        body.cta_target || "projects",
+        layout,
+        mediaType,
+        body.media_ref || null,
+        body.poster_url || null,
+        body.accent_override || null,
+        nextOrder,
+      ],
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    console.error("Hero slide create failed:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ── PUT /api/hero-slides/:id ────────────────────────────────────────
+router.put("/:id", requireAuth, async (req: Request, res: Response) => {
+  const body = req.body || {};
+  try {
+    const { rows: existingRows } = await db.query(
+      "SELECT * FROM hero_slides WHERE id = $1",
+      [req.params.id],
+    );
+    const existing = existingRows[0];
+    if (!existing) {
+      res.status(404).json({ message: "Not found" });
+      return;
+    }
+
+    const layout = ALLOWED_LAYOUTS.includes(body.layout)
+      ? body.layout
+      : existing.layout;
+    const mediaType = ALLOWED_MEDIA_TYPES.includes(body.media_type)
+      ? body.media_type
+      : existing.media_type;
+    const mediaRef = body.media_ref ?? existing.media_ref;
+
+    // If the slide previously pointed at an uploaded file and that URL
+    // actually changed (re-uploaded, or switched to a builtin_scene),
+    // the old file is now orphaned — clean it up, plus its bookkeeping
+    // row in media_assets (best-effort; a missing row is harmless).
+    if (
+      existing.media_type === "uploaded" &&
+      existing.media_ref &&
+      existing.media_ref !== mediaRef
+    ) {
+      removeUploadedFile(existing.media_ref);
+      await db.query("DELETE FROM media_assets WHERE public_url = $1", [
+        existing.media_ref,
+      ]);
+    }
+
+    const { rows } = await db.query(
+      `UPDATE hero_slides SET
+         headline = $1, tagline = $2, cta_label = $3, cta_target = $4,
+         layout = $5, media_type = $6, media_ref = $7,
+         poster_url = $8, accent_override = $9
+       WHERE id = $10
+       RETURNING *`,
+      [
+        body.headline ?? existing.headline,
+        body.tagline ?? existing.tagline,
+        body.cta_label ?? existing.cta_label,
+        body.cta_target ?? existing.cta_target,
+        layout,
+        mediaType,
+        mediaRef,
+        body.poster_url ?? existing.poster_url,
+        body.accent_override ?? existing.accent_override,
+        req.params.id,
+      ],
+    );
+    res.json(rows[0]);
+  } catch (err) {
+    console.error("Hero slide update failed:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ── PATCH /api/hero-slides/:tenantId/reorder ──────────────────────
+router.patch(
+  "/:tenantId/reorder",
+  requireAuth,
+  async (req: Request, res: Response) => {
+    const { order } = req.body as { order: string[] };
+    if (!Array.isArray(order)) {
+      res.status(400).json({ message: "order must be an array of IDs" });
+      return;
+    }
+    try {
+      await Promise.all(
+        order.map((id, idx) =>
+          db.query(
+            "UPDATE hero_slides SET sort_order = $1 WHERE id = $2 AND tenant_id = $3",
+            [idx, id, req.params.tenantId],
+          ),
+        ),
+      );
+      res.json({ message: "Reordered" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
+);
+
+// ── DELETE /api/hero-slides/:id ────────────────────────────────────
+router.delete("/:id", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { rows } = await db.query(
+      "SELECT media_type, media_ref FROM hero_slides WHERE id = $1",
+      [req.params.id],
+    );
+    if (!rows[0]) {
+      res.status(404).json({ message: "Not found" });
+      return;
+    }
+
+    if (rows[0].media_type === "uploaded" && rows[0].media_ref) {
+      removeUploadedFile(rows[0].media_ref);
+      await db.query("DELETE FROM media_assets WHERE public_url = $1", [
+        rows[0].media_ref,
+      ]);
+    }
+
+    await db.query("DELETE FROM hero_slides WHERE id = $1", [req.params.id]);
+    res.json({ message: "Deleted" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Delete failed" });
+  }
+});
+
+export default router;

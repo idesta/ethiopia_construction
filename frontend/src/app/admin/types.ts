@@ -68,3 +68,19 @@ export interface HeroScene {
   sort_order: number;
   created_at: string;
 }
+
+export interface HeroSlide {
+  id: string;
+  tenant_id: string;
+  headline: string;
+  tagline: string;
+  cta_label: string;
+  cta_target: string;
+  layout: string;
+  media_type: string;
+  media_ref: string | null;
+  poster_url: string | null;
+  accent_override: string | null;
+  sort_order: number;
+  created_at: string;
+}

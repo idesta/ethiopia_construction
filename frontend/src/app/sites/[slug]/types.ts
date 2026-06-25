@@ -41,6 +41,20 @@ export interface HeroScene {
   created_at: string;
 }
 
+export interface HeroSlide {
+  id: string;
+  headline: string;
+  tagline: string;
+  cta_label: string;
+  cta_target: string;
+  layout: "split" | "full-bleed";
+  media_type: "builtin_scene" | "uploaded";
+  media_ref: string | null;
+  poster_url: string | null;
+  accent_override: string | null;
+  sort_order: number;
+}
+
 export interface Tenant {
   id: string;
   slug: string;
@@ -55,4 +69,6 @@ export interface Tenant {
   team: TeamMember[];
   services: Service[];
   hero_scenes: HeroScene[];
+  hero_slides: HeroSlide[]; // ← new
 }
+

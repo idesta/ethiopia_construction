@@ -90,6 +90,10 @@ CREATE TABLE IF NOT EXISTS media_assets (
 );
 
 -- ── Hero Scenes (per-tenant animated scene uploads) ──────────────
+-- A flat gallery of decorative icons/images/clips that rotate inside
+-- ONE fixed hero (same headline/tagline/CTA throughout). See
+-- hero_slides below for the newer, separate "multiple complete hero
+-- compositions" feature — the two are independent and can coexist.
 CREATE TABLE IF NOT EXISTS hero_scenes (
   id          UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
   tenant_id   UUID        NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
@@ -100,6 +104,34 @@ CREATE TABLE IF NOT EXISTS hero_scenes (
   created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ── Hero Slides (per-tenant multi-slide hero compositions) ───────
+-- Each row is a COMPLETE hero — its own headline, tagline, CTA, and
+-- visual — that the hero rotates between. A tenant with zero rows
+-- here keeps using the single static hero exactly as before.
+CREATE TABLE IF NOT EXISTS hero_slides (
+  id              UUID        PRIMARY KEY DEFAULT uuid_generate_v4(),
+  tenant_id       UUID        NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+
+  headline        TEXT        NOT NULL,
+  tagline         TEXT,
+  cta_label       TEXT        DEFAULT 'View Our Work',
+  cta_target      TEXT        DEFAULT 'projects',  -- section id passed to onScrollTo
+
+  layout          TEXT        NOT NULL DEFAULT 'split',  -- 'split' | 'full-bleed'
+
+  -- 'builtin_scene' = pick one of the 10 existing animated SVG construction
+  -- icons (crane, bulldozer, excavator, etc.) by key, no upload required.
+  -- 'uploaded' = a tenant-provided image or video.
+  media_type      TEXT        NOT NULL DEFAULT 'builtin_scene',  -- 'builtin_scene' | 'uploaded'
+  media_ref       TEXT,       -- builtin_scene: registry key; uploaded: public URL
+  poster_url      TEXT,       -- optional poster frame, only used when media_ref is a video
+
+  accent_override TEXT,       -- optional per-slide hex color override
+
+  sort_order      INT         DEFAULT 0,
+  created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ── Indexes ───────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_tenants_slug       ON tenants(slug);
 CREATE INDEX IF NOT EXISTS idx_contacts_tenant    ON contacts(tenant_id);
@@ -108,6 +140,7 @@ CREATE INDEX IF NOT EXISTS idx_team_tenant        ON team(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_services_tenant    ON services(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_media_tenant       ON media_assets(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_hero_scenes_tenant ON hero_scenes(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_hero_slides_tenant ON hero_slides(tenant_id);
 
 -- ── Seed: 2 test companies ────────────────
 INSERT INTO tenants (slug, name, tagline, primary_color, accent_color, founded_year)

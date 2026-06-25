@@ -1934,3 +1934,108 @@ textarea.form-input {
     font-size: 2.2rem;
   }
 }
+
+/* Uploaded image/video filling the scene stage (split layout) */
+.hslide-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+}
+
+/* Slide navigation dots — sits above .hero-scroll, not on top of it */
+.hslide-dots {
+  position: absolute;
+  bottom: 5.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 20;
+}
+.hslide-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition:
+    background 0.25s,
+    transform 0.2s;
+}
+.hslide-dot:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+.hslide-dot.active {
+  transform: scale(1.4);
+}
+
+/* ── Full-bleed layout ── */
+.hslide-fullbleed {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  min-height: calc(100vh - 12rem);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.hslide-fullbleed-media {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.hslide-fullbleed-media .hslide-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* The 10 built-in scenes are squarish icon compositions, not wide
+   photography — they'll center/letterbox here rather than truly
+   bleed edge-to-edge. That's expected, not a bug: full-bleed reads
+   best with an uploaded photo or video; builtin scenes read best in
+   the split layout, where they were designed to live. */
+.hslide-fullbleed-media svg {
+  width: 100%;
+  height: 100%;
+}
+.hslide-fullbleed-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    105deg,
+    rgba(8, 9, 11, 0.88) 0%,
+    rgba(8, 9, 11, 0.55) 45%,
+    rgba(8, 9, 11, 0.22) 75%
+  );
+}
+.hslide-fullbleed-content {
+  position: relative;
+  z-index: 3;
+  max-width: 640px;
+  padding: 0 4rem;
+}
+
+@media (max-width: 1024px) {
+  .hslide-fullbleed-content {
+    max-width: 100%;
+    padding: 0 2rem;
+    text-align: center;
+  }
+  .hslide-fullbleed-content .hero-actions {
+    justify-content: center;
+  }
+}
+@media (max-width: 600px) {
+  .hslide-dots {
+    bottom: 4.5rem;
+  }
+}

@@ -15,6 +15,7 @@ import { heroStagger, heroChild } from "../ui/Motion";
 import { BUILTIN_SCENES } from "./BuiltinScenes";
 import { BUILTIN_LOTTIE_SCENES } from "./BuiltinLottieScenes";
 import { SceneContent } from "./SceneContent";
+import { HeroSlideshow } from "./HeroSlideshow";
 
 interface HeroSectionProps {
   tenant: Tenant;
@@ -364,8 +365,10 @@ function AnimatedNumber({
 
 /* ═══════════════════════════════════════════════════════════════════
    BACKGROUND PARTICLES
+   Exported (was module-private before) so HeroSlideshow.tsx can reuse
+   it — purely decorative, has no dependency on single-vs-multi hero.
    ═══════════════════════════════════════════════════════════════════ */
-function Particles({ accent }: { accent: string }) {
+export function Particles({ accent }: { accent: string }) {
   const pts = [
     { x: "6%", y: "12%", s: 2.5, d: 3.2 },
     { x: "91%", y: "9%", s: 2, d: 4.1 },
@@ -408,6 +411,16 @@ function Particles({ accent }: { accent: string }) {
    HERO SECTION
    ═══════════════════════════════════════════════════════════════════ */
 export function HeroSection({ tenant, accent, onScrollTo }: HeroSectionProps) {
+  // Multiple complete hero compositions take over entirely when any
+  // exist — each with its own headline/tagline/CTA/visual. A tenant
+  // with zero rows here is unaffected; everything below this line is
+  // untouched from before.
+  if (tenant.hero_slides && tenant.hero_slides.length > 0) {
+    return (
+      <HeroSlideshow tenant={tenant} accent={accent} onScrollTo={onScrollTo} />
+    );
+  }
+
   const sectionRef = useRef<HTMLElement>(null);
   const shouldReduce = useReducedMotion();
 
